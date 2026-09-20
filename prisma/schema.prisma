@@ -1,0 +1,70 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./benchmark.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model BenchmarkRun {
+  id              String            @id @default(cuid())
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  status          String            @default("PENDING")
+  repoName        String            @default("")
+  repoUrl         String
+  database        String
+  vus             Int               @default(100)
+  totalRecords    Int               @default(100000)
+  maxPoolSize     Int               @default(100)
+  appCpuLimit     String            @default("1")
+  appMemLimit     String            @default("512Mi")
+  dbCpuLimit      String            @default("4")
+  dbMemLimit      String            @default("8Gi")
+  logs            String            @default("")
+  error           String?
+  typeWorkloads   String?
+  results         BenchmarkResult[]
+}
+
+model BenchmarkResult {
+  id                      String       @id @default(cuid())
+  benchmarkRunId          String
+  benchmarkRun            BenchmarkRun @relation(fields: [benchmarkRunId], references: [id], onDelete: Cascade)
+  testType                String
+
+  totalRequests           Float
+  requestPerSecond        Float
+  latencyAverageMs        Float
+  latencyMaxMs            Float
+  latencyMinMs            Float
+  errorCount              Int
+
+  cpuIdleUsage            Float
+  cpuIdlePercent          Float
+  cpuPeakUsage            Float
+  cpuPeakPercent          Float
+
+  memIdleUsage            Float
+  memIdlePercent          Float
+  memPeakUsage            Float
+  memPeakPercent          Float
+
+  dbCpuIdleUsage          Float
+  dbCpuIdlePercent        Float
+  dbCpuPeakUsage          Float
+  dbCpuPeakPercent        Float
+
+  dbMemIdleUsage          Float
+  dbMemIdlePercent        Float
+  dbMemPeakUsage          Float
+  dbMemPeakPercent        Float
+
+  dbIdleConnectionUsage   Float
+  dbIdleConnectionPercent Float
+  dbPeakConnectionUsage   Float
+  dbPeakConnectionPercent Float
+
+  rawMetrics              String?
+}

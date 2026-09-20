@@ -1,0 +1,44 @@
+import { ALL_TEST_TYPES, DEFAULT_BENCHMARK_CONFIG, DatabaseType, TestType } from "./types";
+import { DATABASE_ENGINES } from "./database-profiles";
+
+const REPO_URL_PATTERN = /^[A-Za-z0-9._~:@!$&'()*+,;%=-]+:\/\/[^\s"']+$/;
+
+function isHttpLike(url: string): boolean {
+  return REPO_URL_PATTERN.test(url) || url.startsWith("git@");
+}
+
+function isLocalPath(url: string): boolean {
+  return url.length > 0 && !url.includes("..") && /^[A-Za-z0-9._/-]+$/.test(url);
+}
+
+export function validRepoUrl(url: unknown): string | null {
+  const s = String(url ?? "").trim();
+  if (!s) return DEFAULT_BENCHMARK_CONFIG.repoUrl;
+  return isHttpLike(s) || isLocalPath(s) ? s : null;
+}
+
+export function validTestTypes(raw: unknown): TestType[] | null {
+  const list: unknown[] = Array.isArray(raw) ? raw : [];
+  const types = [
+    ...new Set(
+      list.filter((t): t is TestType => typeof t === "string" && (ALL_TEST_TYPES as string[]).includes(t))
+    ),
+  ];
+  return types.length > 0 ? types : null;
+}
+
+export function validDatabase(raw: unknown): DatabaseType {
+  return DATABASE_ENGINES.includes(raw as DatabaseType) ? (raw as DatabaseType) : DEFAULT_BENCHMARK_CONFIG.database;
+}
+
+export function boundedInt(value: unknown, min: number, max: number, fallback: number): number {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= min && n <= max ? Math.trunc(n) : fallback;
+}
+
+const LIMIT_PATTERN = /^[0-9]+(\.[0-9]+)?(m|Ki|Mi|Gi|Ti)?$/;
+
+export function validLimit(value: unknown, fallback: string): string {
+  const s = String(value || "").trim();
+  return LIMIT_PATTERN.test(s) ? s : fallback;
+}
