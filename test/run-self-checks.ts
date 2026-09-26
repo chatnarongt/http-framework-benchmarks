@@ -1,14 +1,14 @@
 import { spawnSync } from "node:child_process";
 
 const suites = [
-  "./run-context.test.ts",
-  "./database-profiles.test.ts",
-  "./input-validation.test.ts",
-  "./fake-cluster.test.ts",
-  "./peak-tracker.test.ts",
-  "./run-store.test.ts",
-  "./orchestrator.test.ts",
-  "./self-check.ts",
+  "test/run-context.test.ts",
+  "test/database-profiles.test.ts",
+  "test/input-validation.test.ts",
+  "test/fake-cluster.test.ts",
+  "test/peak-tracker.test.ts",
+  "test/run-store.test.ts",
+  "test/orchestrator.test.ts",
+  "test/self-check.ts",
 ];
 
 const failed: string[] = [];
@@ -16,7 +16,7 @@ const failed: string[] = [];
 for (const suite of suites) {
   console.log(`\n===== ${suite} =====`);
   const res = spawnSync("bun", [suite], {
-    cwd: process.cwd() + "/test",
+    cwd: process.cwd(),
     stdio: "inherit",
   });
   if (res.status !== 0) failed.push(suite);
