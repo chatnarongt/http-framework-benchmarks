@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Activity, BarChart2, PlayCircle } from "lucide-react";
+import { Activity, BarChart2, LineChart, PlayCircle } from "lucide-react";
 
 export function Navbar() {
   return (
@@ -16,6 +16,13 @@ export function Navbar() {
           >
             <PlayCircle className="w-4 h-4" />
             <span>New Benchmark</span>
+          </Link>
+          <Link
+            href="/summary"
+            className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors"
+          >
+            <LineChart className="w-4 h-4" />
+            <span>Summary</span>
           </Link>
           <Link
             href="/reports"
