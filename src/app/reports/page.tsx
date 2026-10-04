@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Activity, ArrowRight, BarChart2, Calendar, Database, PlayCircle, StopCircle, Terminal, Trash2 } from "lucide-react";
+import { statusTone } from "@/lib/status";
 
 export default function ReportsListPage() {
   const [runs, setRuns] = useState<any[]>([]);
@@ -44,11 +45,47 @@ export default function ReportsListPage() {
     } catch {}
   };
 
+  const [clearing, setClearing] = useState(false);
+
+  const clearAll = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (runs.length === 0) return;
+    if (
+      !confirm(
+        `Delete ALL ${runs.length} benchmark report${runs.length === 1 ? "" : "s"}? This stops anything still running and cannot be undone.`
+      )
+    ) {
+      return;
+    }
+    setClearing(true);
+    try {
+      const res = await fetch("/api/reports", { method: "DELETE" });
+      if (res.ok) {
+        setRuns([]);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || "Could not clear reports.");
+        fetchRuns();
+      }
+    } catch {
+      fetchRuns();
+    } finally {
+      setClearing(false);
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-20 text-slate-400">Loading benchmark history...</div>;
   }
 
-  const activeRun = runs.find((r) => r.status === "RUNNING") || runs.find((r) => r.status === "PENDING");
+  // PENDING rows queue FIFO; the API returns newest-first so reverse for queue order.
+  const queuedIds = runs
+    .filter((r) => r.status === "PENDING")
+    .slice()
+    .reverse()
+    .map((r) => r.id);
+  const runningRun = runs.find((r) => r.status === "RUNNING");
+  const activeRun = runningRun ?? runs.find((r) => r.status === "PENDING");
 
   return (
     <div className="space-y-6">
@@ -70,7 +107,16 @@ export default function ReportsListPage() {
               title={`View running benchmark: ${activeRun.repoName || activeRun.id}`}
             >
               <Activity className="w-4 h-4 text-sky-400 animate-pulse" />
-              <span>Current Run: {activeRun.repoName || activeRun.id}</span>
+              <span>
+                {runningRun
+                  ? `Running: ${runningRun.repoName || runningRun.id}`
+                  : `Queued: ${activeRun.repoName || activeRun.id}`}
+                {queuedIds.length > 0 && (
+                  <span className="text-slate-400 font-normal">
+                    {" "}· {queuedIds.length} queued
+                  </span>
+                )}
+              </span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           )}
@@ -81,6 +127,16 @@ export default function ReportsListPage() {
             <PlayCircle className="w-4 h-4" />
             <span>New Benchmark</span>
           </Link>
+          <button
+            type="button"
+            onClick={clearAll}
+            disabled={clearing || runs.length === 0}
+            className="inline-flex items-center gap-2 px-3.5 py-2 border border-dashed border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white font-semibold text-xs rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Delete every benchmark report, stopping anything still running"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>{clearing ? "Clearing..." : "Clear All Reports"}</span>
+          </button>
         </div>
       </div>
 
@@ -113,18 +169,18 @@ export default function ReportsListPage() {
                         <span className="text-xs font-mono text-slate-500">({run.id})</span>
                       )}
                       <span
-                        className={`px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider ${
-                          run.status === "COMPLETED"
-                            ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
-                            : run.status === "FAILED"
-                            ? "bg-rose-950 text-rose-400 border border-rose-800"
-                            : run.status === "STOPPED"
-                            ? "bg-amber-950 text-amber-400 border border-amber-800"
-                            : "bg-sky-950 text-sky-400 border border-sky-800 animate-pulse"
-                        }`}
+                        className={`px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider border ${statusTone(run.status)}`}
                       >
                         {run.status}
                       </span>
+                      {run.status === "PENDING" && (
+                        <span
+                          className="text-[11px] font-mono text-slate-400 border border-slate-700 rounded px-2 py-0.5"
+                          title="Position in the execution queue"
+                        >
+                          Queued #{queuedIds.indexOf(run.id) + 1}
+                        </span>
+                      )}
                       <span className="text-xs font-semibold px-2 py-0.5 bg-slate-800 text-sky-400 rounded uppercase">
                         {run.database}
                       </span>
@@ -154,10 +210,10 @@ export default function ReportsListPage() {
                         <button
                           type="button"
                           onClick={(e) => handleStop(run.id, e)}
-                          className="px-2.5 py-1.5 bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 rounded text-xs font-semibold flex items-center gap-1 transition-colors"
+                          className="px-2.5 py-1.5 bg-transparent hover:bg-slate-800 border border-dashed border-slate-600 hover:border-slate-400 text-slate-300 hover:text-white rounded text-xs font-semibold flex items-center gap-1 transition-colors"
                           title="Stop benchmark"
                         >
-                          <StopCircle className="w-3.5 h-3.5 text-rose-400" />
+                          <StopCircle className="w-3.5 h-3.5 text-slate-400" />
                           <span>Stop</span>
                         </button>
                       </>
@@ -182,7 +238,7 @@ export default function ReportsListPage() {
                     )}
                     <button
                       onClick={(e) => deleteRun(run.id, e)}
-                      className="p-1.5 text-slate-500 hover:text-rose-400 rounded transition-colors"
+                      className="p-1.5 text-slate-500 hover:text-white rounded transition-colors"
                       title="Delete"
                     >
                       <Trash2 className="w-4 h-4" />

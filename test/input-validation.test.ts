@@ -4,6 +4,7 @@ import {
   validDatabase,
   validLimit,
   validRepoUrl,
+  validRepoUrls,
   validTestTypes,
 } from "../src/lib/engine/input-validation";
 
@@ -21,6 +22,43 @@ assert.strictEqual(validRepoUrl("https://github.com/chatnarongt/nestjs-platform-
 assert.strictEqual(validRepoUrl("git@github.com:chatnarongt/demo.git"), "git@github.com:chatnarongt/demo.git");
 assert.strictEqual(validRepoUrl("/tmp/opencode/repos/demo"), "/tmp/opencode/repos/demo");
 assert.strictEqual(validRepoUrl(undefined), "https://github.com/chatnarongt/nestjs-platform-express-node.git");
+
+// repoUrls: blank rows dropped (never defaulted), deduped, ordered
+assert.deepStrictEqual(validRepoUrls([
+  "https://github.com/chatnarongt/nestjs-platform-express-node.git",
+  "",
+  "  ",
+  "https://github.com/chatnarongt/nestjs-platform-express-bun.git",
+  "https://github.com/chatnarongt/nestjs-platform-express-node.git",
+]), [
+  "https://github.com/chatnarongt/nestjs-platform-express-node.git",
+  "https://github.com/chatnarongt/nestjs-platform-express-bun.git",
+]);
+
+// repoUrls: one poisoned entry rejects the whole batch
+assert.strictEqual(validRepoUrls([
+  "https://github.com/x/ok.git",
+  "postgres; touch /tmp/pwned",
+]), null);
+
+// repoUrls: empty or all-blank is not a valid batch
+assert.strictEqual(validRepoUrls([]), null);
+assert.strictEqual(validRepoUrls(["", "   "]), null);
+assert.strictEqual(validRepoUrls(undefined), null);
+assert.strictEqual(validRepoUrls("https://github.com/x/one.git"), null);
+
+// repoUrls: over the cap is rejected, not truncated
+assert.strictEqual(validRepoUrls(
+  Array.from({ length: 21 }, (_, i) => `https://github.com/x/repo${i}.git`)
+), null);
+const atCap = validRepoUrls(Array.from({ length: 20 }, (_, i) => `https://github.com/x/repo${i}.git`));
+assert.ok(atCap);
+assert.strictEqual(atCap.length, 20);
+
+// repoUrls: duplicates do not consume the cap
+const dupes = validRepoUrls(Array.from({ length: 40 }, () => "https://github.com/x/only.git"));
+assert.ok(dupes);
+assert.strictEqual(dupes.length, 1);
 
 // test types: only known vocabulary, deduped, non-empty
 assert.deepStrictEqual(validTestTypes(["plaintext", "plaintext"]), ["plaintext"]);

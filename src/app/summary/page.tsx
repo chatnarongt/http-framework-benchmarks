@@ -98,7 +98,7 @@ export default function SummaryPage() {
   if (error) {
     return (
       <div className="text-center py-20 space-y-4">
-        <div className="text-xl font-bold text-red-400">{error}</div>
+        <div className="text-xl font-bold text-white">{error}</div>
         <Link href="/reports" className="text-sky-400 underline">
           Back to Reports
         </Link>
@@ -200,23 +200,23 @@ export default function SummaryPage() {
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartDataByMetric[key]} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#262626" vertical={false} />
                     <XAxis
                       dataKey="framework"
-                      tick={{ fill: "#94a3b8", fontSize: 12 }}
-                      stroke="#334155"
+                      tick={{ fill: "#a3a3a3", fontSize: 12 }}
+                      stroke="#404040"
                     />
-                    <YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} stroke="#334155" width={56} />
+                    <YAxis tick={{ fill: "#a3a3a3", fontSize: 12 }} stroke="#404040" width={56} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: "#0f172a",
-                        border: "1px solid #334155",
+                        backgroundColor: "#171717",
+                        border: "1px solid #404040",
                         borderRadius: 8,
                         fontSize: 12,
                       }}
                       formatter={(value) => [`${formatNumber(Number(value))} ${unit}`]}
                     />
-                    <Bar dataKey="value" fill="#38bdf8" radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="value" fill="#f5f5f5" radius={[3, 3, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

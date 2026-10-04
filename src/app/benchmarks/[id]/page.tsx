@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Activity, ArrowRight, CheckCircle2, ChevronDown, StopCircle, Terminal, XCircle } from "lucide-react";
+import { statusTone } from "@/lib/status";
 
 export default function BenchmarkLivePage() {
   const params = useParams();
@@ -98,19 +99,11 @@ export default function BenchmarkLivePage() {
             {run?.repoName && (
               <span className="text-xs font-mono text-slate-500">({id})</span>
             )}
-            <span
-              className={`px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${
-                status === "COMPLETED"
-                  ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
-                  : status === "FAILED"
-                  ? "bg-rose-950 text-rose-400 border border-rose-800"
-                  : status === "STOPPED"
-                  ? "bg-amber-950 text-amber-400 border border-amber-800"
-                  : "bg-sky-950 text-sky-400 border border-sky-800 animate-pulse"
-              }`}
-            >
-              {status}
-            </span>
+              <span
+                className={`px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider border ${statusTone(status)}`}
+              >
+                {status}
+              </span>
           </div>
           {run && (
             <p className="text-xs text-slate-400 mt-2">
@@ -127,9 +120,9 @@ export default function BenchmarkLivePage() {
               type="button"
               onClick={handleStop}
               disabled={stopping}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-rose-500/10 border border-rose-500/30 hover:bg-rose-500/20 text-rose-300 font-bold text-sm rounded-lg transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-transparent hover:bg-slate-800 border border-dashed border-slate-600 hover:border-slate-400 text-slate-300 hover:text-white font-bold text-sm rounded-lg transition-colors disabled:opacity-50"
             >
-              <StopCircle className="w-4 h-4 text-rose-400" />
+              <StopCircle className="w-4 h-4 text-slate-400" />
               <span>{stopping ? "Stopping..." : "Stop Benchmark"}</span>
             </button>
           )}

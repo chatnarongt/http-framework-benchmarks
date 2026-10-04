@@ -1,5 +1,10 @@
 import assert from "node:assert";
-import { RunRecordSink, createRunStore } from "../src/lib/engine/run-store";
+import {
+  RunRecordSink,
+  createRunStore,
+  isTerminalStatus,
+  waitForTerminalStatus,
+} from "../src/lib/engine/run-store";
 import type { RunStore } from "../src/lib/engine/run-store";
 import { emitLog, emitStatus, runEvents } from "../src/lib/engine/events";
 
@@ -85,11 +90,63 @@ async function testIncrementalPersistence() {
   console.log("incremental persistence tests passed.");
 }
 
+async function testWaitForTerminalStatus() {
+  assert.strictEqual(isTerminalStatus("COMPLETED"), true);
+  assert.strictEqual(isTerminalStatus("FAILED"), true);
+  assert.strictEqual(isTerminalStatus("STOPPED"), true);
+  assert.strictEqual(isTerminalStatus("PENDING"), false);
+  assert.strictEqual(isTerminalStatus("RUNNING"), false);
+
+  // settles once every id is terminal
+  const polls: string[][] = [];
+  const states = [
+    [{ id: "a", status: "RUNNING" }, { id: "b", status: "PENDING" }],
+    [{ id: "a", status: "COMPLETED" }, { id: "b", status: "STOPPED" }],
+  ];
+  const settled = await waitForTerminalStatus(
+    async (ids) => {
+      polls.push(ids);
+      return states[Math.min(polls.length, states.length) - 1];
+    },
+    ["a", "b"],
+    10_000,
+    async () => {},
+    () => 0
+  );
+  assert.strictEqual(settled, true);
+  assert.strictEqual(polls.length, 2);
+
+  // a stalled run must not report settled before the deadline
+  let tick = 0;
+  const stalled = await waitForTerminalStatus(
+    async () => [{ id: "a", status: "RUNNING" }],
+    ["a"],
+    1000,
+    async () => {},
+    () => (tick += 400)
+  );
+  assert.strictEqual(stalled, false);
+
+  // a missing row must not count as settled
+  let tick2 = 0;
+  const missing = await waitForTerminalStatus(
+    async () => [],
+    ["a", "b"],
+    1000,
+    async () => {},
+    () => (tick2 += 400)
+  );
+  assert.strictEqual(missing, false);
+
+  console.log("wait-for-terminal tests passed.");
+}
+
 async function main() {
   await testAppendSemantics();
   await testStatusTransitions();
   await testFailedStatusWithError();
   await testIncrementalPersistence();
+  await testWaitForTerminalStatus();
   console.log("All run-store tests passed!");
 }
 

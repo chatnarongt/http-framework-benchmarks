@@ -23,6 +23,7 @@ Bun + Next.js 16 app that benchmarks third-party HTTP framework repos on Kuberne
 - Request input is validated in `src/lib/engine/input-validation.ts`. Keep that boundary, because the values end up interpolated into shell commands.
 - Git repos are cloned to `/tmp/opencode/repos/<name>`. k6 scripts and manifests are written to `/tmp`.
 - `README.md` defines the contract benchmarked repos must meet (endpoints, env vars, probes). Keep it in sync with `k6-script.ts` and `database-profiles.ts`.
+- UI is monotone dark grey on Geist Mono — no hue, no max-width container. `DESIGN.md` is the spec (grey ramp, status vocabulary, destructive treatment); `src/lib/status.ts` holds the status tones. Keep UI changes in sync with both.
 
 ## Real runs
 - Real runs need Docker with buildx, a `kubectl` context whose cluster can see locally built images (e.g. Colima/k3s), and metrics-server.

@@ -17,6 +17,28 @@ export function validRepoUrl(url: unknown): string | null {
   return isHttpLike(s) || isLocalPath(s) ? s : null;
 }
 
+export const MAX_REPO_URLS = 20;
+
+/**
+ * Batch variant of `validRepoUrl`. Blank entries are dropped rather than
+ * defaulted, so empty form rows cannot silently become the default repo.
+ * Returns null when nothing survives or when any non-blank entry is invalid.
+ */
+export function validRepoUrls(raw: unknown): string[] | null {
+  const list: unknown[] = Array.isArray(raw) ? raw : [];
+  const out: string[] = [];
+  for (const item of list) {
+    const s = String(item ?? "").trim();
+    if (!s) continue;
+    const v = validRepoUrl(s);
+    if (!v) return null;
+    if (out.includes(v)) continue;
+    out.push(v);
+    if (out.length > MAX_REPO_URLS) return null;
+  }
+  return out.length > 0 ? out : null;
+}
+
 export function validTestTypes(raw: unknown): TestType[] | null {
   const list: unknown[] = Array.isArray(raw) ? raw : [];
   const types = [

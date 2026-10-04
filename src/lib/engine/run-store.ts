@@ -56,3 +56,31 @@ export function createRunStore(
 ): RunStore {
   return new RunStoreImpl(runId, sink, initialLogs);
 }
+
+export const TERMINAL_STATUSES: readonly string[] = ["COMPLETED", "FAILED", "STOPPED"];
+
+export function isTerminalStatus(status: string): boolean {
+  return TERMINAL_STATUSES.includes(status);
+}
+
+/**
+ * Polls until every id reaches a terminal status. Deleting a run row before its
+ * orchestrator teardown finishes orphans the Kubernetes resources it created,
+ * so callers that wipe runs must wait for this first.
+ * Returns false on timeout rather than lying about completion.
+ */
+export async function waitForTerminalStatus(
+  fetchStatuses: (ids: string[]) => Promise<{ id: string; status: string }[]>,
+  ids: string[],
+  timeoutMs: number,
+  sleep: (ms: number) => Promise<void> = (ms) => new Promise((r) => setTimeout(r, ms)),
+  now: () => number = Date.now
+): Promise<boolean> {
+  const deadline = now() + timeoutMs;
+  for (;;) {
+    const rows = await fetchStatuses(ids);
+    if (rows.length >= ids.length && rows.every((r) => isTerminalStatus(r.status))) return true;
+    if (now() >= deadline) return false;
+    await sleep(250);
+  }
+}

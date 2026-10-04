@@ -29,7 +29,7 @@ export default function ReportDetailPage() {
   if (!run || run.error === "Report not found") {
     return (
       <div className="text-center py-20 space-y-4">
-        <div className="text-xl font-bold text-red-400">Report not found</div>
+        <div className="text-xl font-bold text-white">Report not found</div>
         <Link href="/reports" className="text-sky-400 underline">
           Back to Reports
         </Link>
@@ -204,7 +204,7 @@ export default function ReportDetailPage() {
                   <td className="py-3 px-4">{r.latencyMinMs} ms</td>
                   <td className="py-3 px-4">{r.latencyMaxMs} ms</td>
                   <td className="py-3 px-4">
-                    <span className={r.errorCount > 0 ? "text-rose-400 font-bold" : "text-slate-400"}>
+                    <span className={r.errorCount > 0 ? "text-white font-bold" : "text-slate-400"}>
                       {r.errorCount}
                     </span>
                   </td>

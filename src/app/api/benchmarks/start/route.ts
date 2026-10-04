@@ -6,7 +6,7 @@ import {
   boundedInt,
   validDatabase,
   validLimit,
-  validRepoUrl,
+  validRepoUrls,
   validTestTypes,
 } from "@/lib/engine/input-validation";
 
@@ -14,10 +14,10 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const repoUrl = validRepoUrl(body.repoUrl);
-    if (!repoUrl) {
+    const repoUrls = validRepoUrls(body.repoUrls);
+    if (!repoUrls) {
       return NextResponse.json(
-        { error: "repoUrl must be a git URL or a local path" },
+        { error: "repoUrls must contain at least one valid git URL or local path" },
         { status: 400 }
       );
     }
@@ -32,7 +32,6 @@ export async function POST(req: Request) {
 
     const database = validDatabase(body.database);
 
-    const repoName = String(body.repoName || extractRepoName(repoUrl)).trim();
     const vus = boundedInt(body.vus, 1, 1000, DEFAULT_BENCHMARK_CONFIG.vus);
     const totalRecords = boundedInt(body.totalRecords, 1, 10_000_000, DEFAULT_BENCHMARK_CONFIG.totalRecords);
     const maxPoolSize = boundedInt(body.maxPoolSize, 1, 10_000, DEFAULT_BENCHMARK_CONFIG.maxPoolSize);
@@ -45,44 +44,50 @@ export async function POST(req: Request) {
     const typeWorkloads =
       body.typeWorkloads && typeof body.typeWorkloads === "object" ? body.typeWorkloads : undefined;
 
-    const run = await prisma.benchmarkRun.create({
-      data: {
-        repoName,
-        repoUrl,
-        database,
-        vus,
-        totalRecords,
-        maxPoolSize,
-        appCpuLimit,
-        appMemLimit,
-        dbCpuLimit,
-        dbMemLimit,
-        typeWorkloads: typeWorkloads ? JSON.stringify(typeWorkloads) : null,
-        status: "PENDING",
-      },
-    });
+    // One row per repo, created atomically: a partial batch must never be enqueued.
+    const runs = await prisma.$transaction(
+      repoUrls.map((repoUrl) =>
+        prisma.benchmarkRun.create({
+          data: {
+            repoName: extractRepoName(repoUrl),
+            repoUrl,
+            database,
+            vus,
+            totalRecords,
+            maxPoolSize,
+            appCpuLimit,
+            appMemLimit,
+            dbCpuLimit,
+            dbMemLimit,
+            typeWorkloads: typeWorkloads ? JSON.stringify(typeWorkloads) : null,
+            status: "PENDING",
+          },
+        })
+      )
+    );
 
-    const config = {
-      repoName,
-      repoUrl,
-      database,
-      types,
-      vus,
-      totalRecords,
-      typeWorkloads,
-      maxPoolSize,
-      appCpuLimit,
-      appMemLimit,
-      dbCpuLimit,
-      dbMemLimit,
-    };
+    for (const run of runs) {
+      benchmarkQueue
+        .enqueue(run.id, {
+          repoName: run.repoName,
+          repoUrl: run.repoUrl,
+          database,
+          types,
+          vus,
+          totalRecords,
+          typeWorkloads,
+          maxPoolSize,
+          appCpuLimit,
+          appMemLimit,
+          dbCpuLimit,
+          dbMemLimit,
+        })
+        .catch((err) => {
+          console.error(`Failed to enqueue benchmark run ${run.id}:`, err);
+        });
+    }
 
-    // Enqueue job for single sequential execution
-    benchmarkQueue.enqueue(run.id, config).catch((err) => {
-      console.error(`Failed to enqueue benchmark run ${run.id}:`, err);
-    });
-
-    return NextResponse.json({ runId: run.id });
+    return NextResponse.json({ runIds: runs.map((r) => r.id) });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 400 });
   }
