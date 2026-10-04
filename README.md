@@ -58,9 +58,14 @@ All benchmark operations are executed using HTTP `GET` requests:
 
 ## Example Repository
 
-Reference implementations:
-- [chatnarongt/nestjs-platform-express-node](https://github.com/chatnarongt/nestjs-platform-express-node.git) — Node.js runtime
-- [chatnarongt/nestjs-platform-express-bun](https://github.com/chatnarongt/nestjs-platform-express-bun.git) — Bun runtime (same code, same framework)
+Reference implementations — identical application code and contract, varying only the HTTP adapter and the runtime:
+
+| Repository | HTTP adapter | Runtime |
+|---|---|---|
+| [chatnarongt/nestjs-platform-express-node](https://github.com/chatnarongt/nestjs-platform-express-node.git) | Express | Node.js |
+| [chatnarongt/nestjs-platform-express-bun](https://github.com/chatnarongt/nestjs-platform-express-bun.git) | Express | Bun |
+| [chatnarongt/nestjs-platform-fastify-node](https://github.com/chatnarongt/nestjs-platform-fastify-node.git) | Fastify | Node.js |
+| [chatnarongt/nestjs-platform-fastify-bun](https://github.com/chatnarongt/nestjs-platform-fastify-bun.git) | Fastify | Bun |
 
 ---
 
