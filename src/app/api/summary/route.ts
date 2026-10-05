@@ -18,6 +18,7 @@ export async function GET() {
             latencyAverageMs: true,
             cpuPeakPercent: true,
             memPeakPercent: true,
+            memPeakUsage: true,
             dbPeakConnectionPercent: true,
           },
         },

@@ -6,6 +6,7 @@ export interface SummaryRunResult {
   latencyAverageMs: number;
   cpuPeakPercent: number;
   memPeakPercent: number;
+  memPeakUsage?: number;
   dbPeakConnectionPercent: number;
 }
 
@@ -24,6 +25,7 @@ export interface SummaryRow {
   latencyAverageMs: number;
   cpuPeakPercent: number;
   memPeakPercent: number;
+  memPeakUsage: number;
   dbPeakConnectionPercent: number;
 }
 
@@ -49,6 +51,7 @@ type BestRow = {
   testType: TestType;
   database: string;
   framework: string;
+  memPeakUsage?: number;
 } & Partial<Record<Metric, number>>;
 
 export function aggregateSummary(runs: SummaryRun[]): SummaryRow[] {
@@ -70,7 +73,11 @@ export function aggregateSummary(runs: SummaryRun[]): SummaryRow[] {
         const value = result[metric];
         if (typeof value !== "number" || !Number.isFinite(value)) continue;
         const prev = row[metric];
-        row[metric] = prev === undefined ? value : BETTER[metric](prev, value);
+        const best = prev === undefined ? value : BETTER[metric](prev, value);
+        row[metric] = best;
+        if (metric === "memPeakPercent" && best === value && result.memPeakUsage !== undefined) {
+          row.memPeakUsage = result.memPeakUsage;
+        }
       }
       best.set(key, row);
     }
@@ -86,6 +93,7 @@ export function aggregateSummary(runs: SummaryRun[]): SummaryRow[] {
       latencyAverageMs: row.latencyAverageMs ?? 0,
       cpuPeakPercent: row.cpuPeakPercent ?? 0,
       memPeakPercent: row.memPeakPercent ?? 0,
+      memPeakUsage: row.memPeakUsage ?? 0,
       dbPeakConnectionPercent: row.dbPeakConnectionPercent ?? 0,
     });
   }

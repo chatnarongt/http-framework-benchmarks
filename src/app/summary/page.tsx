@@ -6,6 +6,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  LabelList,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -30,6 +31,11 @@ const METRIC_CONFIGS = [
 
 type MetricKey = (typeof METRIC_CONFIGS)[number]["key"];
 
+const STORAGE_KEY = "benchhub_summary_filters";
+
+const SORT_OPTIONS = ["none", "best", "worst", "name"] as const;
+type SortBy = (typeof SORT_OPTIONS)[number];
+
 function formatNumber(value: number) {
   if (Math.abs(value) >= 1000) return Math.round(value).toLocaleString();
   return Math.round(value * 100) / 100;
@@ -41,6 +47,16 @@ export default function SummaryPage() {
   const [error, setError] = useState<string | null>(null);
   const [testType, setTestType] = useState<string>("read-one");
   const [database, setDatabase] = useState<string>("");
+  const [sortBy, setSortBy] = useState<SortBy>("best");
+  const [visibleMetrics, setVisibleMetrics] = useState<MetricKey[]>(
+    METRIC_CONFIGS.map(({ key }) => key)
+  );
+
+  const toggleMetric = (key: MetricKey) => {
+    setVisibleMetrics((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+  };
 
   useEffect(() => {
     fetch("/api/summary")
@@ -55,6 +71,28 @@ export default function SummaryPage() {
         setLoading(false);
       });
   }, []);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}");
+      if (typeof saved.testType === "string") setTestType(saved.testType);
+      if (typeof saved.database === "string") setDatabase(saved.database);
+      if (SORT_OPTIONS.includes(saved.sortBy)) setSortBy(saved.sortBy);
+      if (Array.isArray(saved.metrics)) {
+        const valid = saved.metrics.filter((m: unknown): m is MetricKey =>
+          METRIC_CONFIGS.some(({ key }) => key === m)
+        );
+        if (valid.length > 0) setVisibleMetrics(valid);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ testType, database, sortBy, metrics: visibleMetrics })
+    );
+  }, [testType, database, sortBy, visibleMetrics]);
 
   const availableTestTypes = useMemo(() => {
     const present = new Set(rows.map((r) => r.testType));
@@ -81,15 +119,41 @@ export default function SummaryPage() {
   const { frameworks, chartDataByMetric } = useMemo(() => {
     const selected = rows.filter((r) => r.testType === testType && r.database === database);
     const frameworks = [...new Set(selected.map((r) => r.framework))];
-    const chartDataByMetric = {} as Record<MetricKey, { framework: string; value: number }[]>;
+    const chartDataByMetric = {} as Record<
+      MetricKey,
+      { framework: string; value: number; usage?: number; label: string }[]
+    >;
     for (const { key } of METRIC_CONFIGS) {
-      chartDataByMetric[key] = frameworks.map((fw) => ({
-        framework: fw,
-        value: selected.find((r) => r.framework === fw)?.[key] ?? 0,
-      }));
+      const data = frameworks.map((fw) => {
+        const row = selected.find((r) => r.framework === fw);
+        return {
+          framework: fw,
+          value: row?.[key] ?? 0,
+          usage: key === "memPeakPercent" ? row?.memPeakUsage : undefined,
+          label: "",
+        };
+      });
+      const dir = key === "requestPerSecond" ? -1 : 1;
+      if (sortBy === "name") data.sort((a, b) => a.framework.localeCompare(b.framework));
+      else if (sortBy === "best") data.sort((a, b) => dir * (a.value - b.value));
+      else if (sortBy === "worst") data.sort((a, b) => -dir * (a.value - b.value));
+      if (key.endsWith("Percent")) for (const d of data) d.value = Math.min(100, d.value);
+      for (const d of data) {
+        d.label =
+          key === "memPeakPercent"
+            ? `${formatNumber(d.usage ?? 0)}MB, ${formatNumber(d.value)}%`
+            : `${formatNumber(d.value)}${key.endsWith("Percent") ? "%" : ""}`;
+      }
+      chartDataByMetric[key] = data;
     }
     return { frameworks, chartDataByMetric };
-  }, [rows, testType, database]);
+  }, [rows, testType, database, sortBy]);
+
+  const isDbTest = testType !== "plaintext" && testType !== "json";
+  const shownMetrics = METRIC_CONFIGS.filter(
+    ({ key }) =>
+      visibleMetrics.includes(key) && (key !== "dbPeakConnectionPercent" || isDbTest)
+  );
 
   if (loading) {
     return <div className="text-center py-20 text-slate-400">Loading summary...</div>;
@@ -147,33 +211,75 @@ export default function SummaryPage() {
             <button
               key={db}
               onClick={() => setDatabase(db)}
-              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-colors border ${
-                db === database
-                  ? "bg-sky-500 text-slate-950 border-sky-500"
-                  : "bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-600"
-              }`}
+              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-colors border ${db === database
+                ? "bg-sky-500 text-slate-950 border-sky-500"
+                : "bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-600"
+                }`}
             >
               <span
-                className={`w-2.5 h-2.5 rounded-full border ${
-                  db === database ? "bg-slate-950 border-slate-950" : "border-slate-500"
-                }`}
+                className={`w-2.5 h-2.5 rounded-full border ${db === database ? "bg-slate-950 border-slate-950" : "border-slate-500"
+                  }`}
               />
               {db}
             </button>
           ))}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mr-1">
+            Type
+          </span>
           {availableTestTypes.map((t) => (
             <button
               key={t}
               onClick={() => setTestType(t)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-colors border ${
-                t === testType
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-colors border ${t === testType
+                ? "bg-sky-500 text-slate-950 border-sky-500"
+                : "bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-600"
+                }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mr-1">
+            Metrics
+          </span>
+          {METRIC_CONFIGS.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => toggleMetric(key)}
+              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-colors border ${
+                visibleMetrics.includes(key)
                   ? "bg-sky-500 text-slate-950 border-sky-500"
                   : "bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-600"
               }`}
             >
-              {t}
+              <span
+                className={`w-2.5 h-2.5 rounded-sm border ${
+                  visibleMetrics.includes(key)
+                    ? "bg-slate-950 border-slate-950"
+                    : "border-slate-500"
+                }`}
+              />
+              {label.replace(" (best)", "")}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mr-1">
+            Sort
+          </span>
+          {SORT_OPTIONS.map((s) => (
+            <button
+              key={s}
+              onClick={() => setSortBy(s)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-colors border ${s === sortBy
+                ? "bg-sky-500 text-slate-950 border-sky-500"
+                : "bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-600"
+                }`}
+            >
+              {s[0].toUpperCase() + s.slice(1)}
             </button>
           ))}
         </div>
@@ -186,9 +292,13 @@ export default function SummaryPage() {
             type <span className="font-mono text-sky-400">{testType}</span>.
           </div>
         </div>
+      ) : shownMetrics.length === 0 ? (
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center">
+          <div className="text-slate-400 text-sm">No metrics selected.</div>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          {METRIC_CONFIGS.map(({ key, label, unit, hint }) => (
+        <div className="space-y-6">
+          {shownMetrics.map(({ key, label, unit, hint }) => (
             <div
               key={key}
               className="bg-slate-900 border border-slate-800 rounded-xl p-6 flex flex-col"
@@ -197,16 +307,27 @@ export default function SummaryPage() {
                 <h2 className="text-sm font-bold text-slate-200">{label}</h2>
                 <span className="text-[11px] text-slate-500">{hint}</span>
               </div>
-              <div className="h-72">
+              <div style={{ height: frameworks.length * 26 + 16 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartDataByMetric[key]} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#262626" vertical={false} />
+                  <BarChart
+                    layout="vertical"
+                    data={chartDataByMetric[key]}
+                    margin={{ top: 8, right: key === "memPeakPercent" ? 104 : 56, left: 0, bottom: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#262626" horizontal={false} />
                     <XAxis
-                      dataKey="framework"
+                      type="number"
                       tick={{ fill: "#a3a3a3", fontSize: 12 }}
                       stroke="#404040"
                     />
-                    <YAxis tick={{ fill: "#a3a3a3", fontSize: 12 }} stroke="#404040" width={56} />
+                    <YAxis
+                      type="category"
+                      dataKey="framework"
+                      tick={{ fill: "#a3a3a3", fontSize: 12 }}
+                      stroke="#404040"
+                      width={Math.max(110, ...frameworks.map((f) => f.length * 8 + 16))}
+                      interval={0}
+                    />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: "#171717",
@@ -216,7 +337,13 @@ export default function SummaryPage() {
                       }}
                       formatter={(value) => [`${formatNumber(Number(value))} ${unit}`]}
                     />
-                    <Bar dataKey="value" fill="#f5f5f5" radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="value" fill="#f5f5f5" radius={[0, 3, 3, 0]} barSize={16}>
+                      <LabelList
+                        dataKey="label"
+                        position="right"
+                        style={{ fill: "#a3a3a3", fontSize: 12 }}
+                      />
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
