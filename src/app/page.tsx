@@ -281,7 +281,7 @@ export default function SetupPage() {
                     placeholder="https://github.com/..."
                   />
                 </div>
-                <div className="relative sm:w-36">
+                <div className="relative sm:w-40">
                   <select
                     value={repo.database}
                     onChange={(e) => updateRepo(index, { database: validDatabase(e.target.value) })}
