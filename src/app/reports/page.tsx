@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Activity, ArrowRight, BarChart2, Calendar, Database, PlayCircle, StopCircle, Terminal, Trash2 } from "lucide-react";
+import { Activity, ArrowRight, BarChart2, Calendar, Database, PlayCircle, Radio, StopCircle, Terminal, Trash2 } from "lucide-react";
 import { statusTone } from "@/lib/status";
 
 export default function ReportsListPage() {
@@ -100,6 +100,14 @@ export default function ReportsListPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <Link
+            href="/benchmarks/live"
+            className="inline-flex items-center gap-2 px-3.5 py-2 bg-transparent border border-dashed border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white font-semibold text-xs rounded-lg transition-colors"
+            title="Follow the live benchmark and hop to the next queued run automatically"
+          >
+            <Radio className="w-4 h-4 text-sky-400" />
+            <span>Live</span>
+          </Link>
           {activeRun && (
             <Link
               href={`/benchmarks/${activeRun.id}`}

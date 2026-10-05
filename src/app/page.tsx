@@ -17,6 +17,7 @@ export default function SetupPage() {
   const [vus, setVus] = useState(DEFAULT_BENCHMARK_CONFIG.vus);
   const [totalRecords, setTotalRecords] = useState(DEFAULT_BENCHMARK_CONFIG.totalRecords);
   const [maxPoolSize, setMaxPoolSize] = useState(DEFAULT_BENCHMARK_CONFIG.maxPoolSize);
+  const [runCount, setRunCount] = useState(1);
   const [typeWorkloads, setTypeWorkloads] = useState<Partial<Record<TestType, { vus: number; totalRecords: number }>>>({});
   const [showTypeOverrides, setShowTypeOverrides] = useState(false);
 
@@ -49,6 +50,7 @@ export default function SetupPage() {
         if (parsed.vus !== undefined) setVus(Number(parsed.vus));
         if (parsed.totalRecords !== undefined) setTotalRecords(Number(parsed.totalRecords));
         if (parsed.maxPoolSize !== undefined) setMaxPoolSize(Number(parsed.maxPoolSize));
+        if (parsed.runCount !== undefined) setRunCount(Number(parsed.runCount));
         if (parsed.typeWorkloads && typeof parsed.typeWorkloads === "object") {
           setTypeWorkloads(parsed.typeWorkloads);
         }
@@ -77,6 +79,7 @@ export default function SetupPage() {
         typeWorkloads,
         showTypeOverrides,
         maxPoolSize,
+        runCount,
         appCpuLimit,
         appMemLimit,
         dbCpuLimit,
@@ -94,6 +97,7 @@ export default function SetupPage() {
     typeWorkloads,
     showTypeOverrides,
     maxPoolSize,
+    runCount,
     appCpuLimit,
     appMemLimit,
     dbCpuLimit,
@@ -140,6 +144,7 @@ export default function SetupPage() {
     setVus(DEFAULT_BENCHMARK_CONFIG.vus);
     setTotalRecords(DEFAULT_BENCHMARK_CONFIG.totalRecords);
     setMaxPoolSize(DEFAULT_BENCHMARK_CONFIG.maxPoolSize);
+    setRunCount(1);
     setTypeWorkloads({});
     setShowTypeOverrides(false);
     setAppCpuLimit(DEFAULT_BENCHMARK_CONFIG.appCpuLimit);
@@ -187,6 +192,7 @@ export default function SetupPage() {
           totalRecords,
           typeWorkloads,
           maxPoolSize,
+          runCount,
           appCpuLimit,
           appMemLimit,
           dbCpuLimit,
@@ -231,7 +237,7 @@ export default function SetupPage() {
             <label className="block text-sm font-semibold text-slate-200">
               Target Repositories (Git URLs or Local Paths)
               <span className="ml-2 text-xs font-normal text-slate-500">
-                {activeRepos.length} selected — one benchmark run each
+                {activeRepos.length} selected — {runCount} run{runCount === 1 ? "" : "s"} each
               </span>
             </label>
             <button
@@ -395,7 +401,7 @@ export default function SetupPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-2">
                 Default Virtual Users (VUs)
@@ -438,6 +444,23 @@ export default function SetupPage() {
                 className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 font-mono focus:outline-none focus:border-sky-500"
               />
               <p className="text-xs text-slate-500 mt-1">Connection % denominator</p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-2">
+                Runs per Repo
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="50"
+                value={runCount}
+                onChange={(e) => setRunCount(Math.max(1, Math.floor(Number(e.target.value) || 1)))}
+                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 font-mono focus:outline-none focus:border-sky-500"
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                {activeRepos.length * runCount} queued sequentially
+              </p>
             </div>
           </div>
 
@@ -617,7 +640,7 @@ export default function SetupPage() {
             <span>
               {loading
                 ? "Starting Pipeline..."
-                : `Start ${activeRepos.length} Benchmark${activeRepos.length === 1 ? "" : "s"}`}
+                : `Start ${activeRepos.length * runCount} Benchmark${activeRepos.length * runCount === 1 ? "" : "s"}`}
             </span>
           </button>
         </div>

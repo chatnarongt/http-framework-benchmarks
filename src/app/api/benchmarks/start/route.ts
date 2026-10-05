@@ -44,25 +44,35 @@ export async function POST(req: Request) {
     const typeWorkloads =
       body.typeWorkloads && typeof body.typeWorkloads === "object" ? body.typeWorkloads : undefined;
 
-    // One row per repo, created atomically: a partial batch must never be enqueued.
+    const runCount = boundedInt(body.runCount, 1, 50, 1);
+    if (repoUrls.length * runCount > 50) {
+      return NextResponse.json(
+        { error: "repos × runs per repo must not exceed 50 total runs" },
+        { status: 400 }
+      );
+    }
+
+    // One row per repo per repeat, created atomically: a partial batch must never be enqueued.
     const runs = await prisma.$transaction(
-      repoUrls.map((repoUrl) =>
-        prisma.benchmarkRun.create({
-          data: {
-            repoName: extractRepoName(repoUrl),
-            repoUrl,
-            database,
-            vus,
-            totalRecords,
-            maxPoolSize,
-            appCpuLimit,
-            appMemLimit,
-            dbCpuLimit,
-            dbMemLimit,
-            typeWorkloads: typeWorkloads ? JSON.stringify(typeWorkloads) : null,
-            status: "PENDING",
-          },
-        })
+      repoUrls.flatMap((repoUrl) =>
+        Array.from({ length: runCount }, () =>
+          prisma.benchmarkRun.create({
+            data: {
+              repoName: extractRepoName(repoUrl),
+              repoUrl,
+              database,
+              vus,
+              totalRecords,
+              maxPoolSize,
+              appCpuLimit,
+              appMemLimit,
+              dbCpuLimit,
+              dbMemLimit,
+              typeWorkloads: typeWorkloads ? JSON.stringify(typeWorkloads) : null,
+              status: "PENDING",
+            },
+          })
+        )
       )
     );
 
