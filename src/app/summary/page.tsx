@@ -51,6 +51,7 @@ export default function SummaryPage() {
   const [visibleMetrics, setVisibleMetrics] = useState<MetricKey[]>(
     METRIC_CONFIGS.map(({ key }) => key)
   );
+  const [filtersLoaded, setFiltersLoaded] = useState(false);
 
   const toggleMetric = (key: MetricKey) => {
     setVisibleMetrics((prev) =>
@@ -85,14 +86,16 @@ export default function SummaryPage() {
         if (valid.length > 0) setVisibleMetrics(valid);
       }
     } catch {}
+    setFiltersLoaded(true);
   }, []);
 
   useEffect(() => {
+    if (!filtersLoaded) return;
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({ testType, database, sortBy, metrics: visibleMetrics })
     );
-  }, [testType, database, sortBy, visibleMetrics]);
+  }, [filtersLoaded, testType, database, sortBy, visibleMetrics]);
 
   const availableTestTypes = useMemo(() => {
     const present = new Set(rows.map((r) => r.testType));
