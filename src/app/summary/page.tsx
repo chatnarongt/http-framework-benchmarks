@@ -12,7 +12,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { LineChart, ArrowLeft } from "lucide-react";
+import { LineChart, ArrowLeft, Heart } from "lucide-react";
 import type { SummaryRow } from "@/lib/summary";
 import { ALL_TEST_TYPES } from "@/lib/engine/types";
 
@@ -85,7 +85,7 @@ export default function SummaryPage() {
         );
         if (valid.length > 0) setVisibleMetrics(valid);
       }
-    } catch {}
+    } catch { }
     setFiltersLoaded(true);
   }, []);
 
@@ -214,15 +214,12 @@ export default function SummaryPage() {
             <button
               key={db}
               onClick={() => setDatabase(db)}
-              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-colors border ${db === database
+              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-colors border capitalize ${db === database
                 ? "bg-sky-500 text-slate-950 border-sky-500"
                 : "bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-600"
                 }`}
             >
-              <span
-                className={`w-2.5 h-2.5 rounded-full border ${db === database ? "bg-slate-950 border-slate-950" : "border-slate-500"
-                  }`}
-              />
+              <Heart className="size-3" fill={db === database ? "currentColor" : "none"} />
               {db}
             </button>
           ))}
@@ -252,18 +249,16 @@ export default function SummaryPage() {
             <button
               key={key}
               onClick={() => toggleMetric(key)}
-              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-colors border ${
-                visibleMetrics.includes(key)
-                  ? "bg-sky-500 text-slate-950 border-sky-500"
-                  : "bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-600"
-              }`}
+              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-colors border ${visibleMetrics.includes(key)
+                ? "bg-sky-500 text-slate-950 border-sky-500"
+                : "bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-600"
+                }`}
             >
               <span
-                className={`w-2.5 h-2.5 rounded-sm border ${
-                  visibleMetrics.includes(key)
-                    ? "bg-slate-950 border-slate-950"
-                    : "border-slate-500"
-                }`}
+                className={`w-2.5 h-2.5 rounded-sm border ${visibleMetrics.includes(key)
+                  ? "bg-slate-950 border-slate-950"
+                  : "border-slate-500"
+                  }`}
               />
               {label.replace(" (best)", "")}
             </button>
