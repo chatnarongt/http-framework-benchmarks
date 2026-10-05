@@ -5,6 +5,7 @@ import {
   validLimit,
   validRepoUrl,
   validRepoUrls,
+  validRepos,
   validTestTypes,
 } from "../src/lib/engine/input-validation";
 
@@ -66,6 +67,42 @@ assert.deepStrictEqual(validTestTypes(["read-one", "bogus", "delete-many"]), ["r
 assert.strictEqual(validTestTypes([]), null);
 assert.strictEqual(validTestTypes("plaintext"), null);
 assert.strictEqual(validTestTypes(["rm -rf /"]), null);
+
+// repos: per-repo database pairs, blanks dropped, deduped on url+database
+assert.deepStrictEqual(validRepos([
+  { repoUrl: "https://github.com/x/ok.git", database: "postgres" },
+  { repoUrl: "", database: "mssql" },
+  { repoUrl: "  ", database: "mongodb" },
+  { repoUrl: "https://github.com/x/ok.git", database: "mongodb" },
+  { repoUrl: "https://github.com/x/ok.git", database: "postgres" },
+  { repoUrl: "https://github.com/x/bun.git" },
+]), [
+  { repoUrl: "https://github.com/x/ok.git", database: "postgres" },
+  { repoUrl: "https://github.com/x/ok.git", database: "mongodb" },
+  { repoUrl: "https://github.com/x/bun.git", database: "postgres" },
+]);
+
+// repos: one poisoned URL rejects the whole batch
+assert.strictEqual(validRepos([
+  { repoUrl: "https://github.com/x/ok.git", database: "postgres" },
+  { repoUrl: "postgres; touch /tmp/pwned", database: "postgres" },
+]), null);
+
+// repos: poisoned database value falls back to the default engine, not rejected
+assert.deepStrictEqual(validRepos([
+  { repoUrl: "https://github.com/x/ok.git", database: "mssql; touch /tmp/pwned" },
+]), [{ repoUrl: "https://github.com/x/ok.git", database: "postgres" }]);
+
+// repos: empty or all-blank is not a valid batch
+assert.strictEqual(validRepos([]), null);
+assert.strictEqual(validRepos([{ repoUrl: "", database: "mssql" }]), null);
+assert.strictEqual(validRepos(undefined), null);
+assert.strictEqual(validRepos("https://github.com/x/one.git"), null);
+
+// repos: cap applies to url+database pairs
+assert.strictEqual(validRepos(
+  Array.from({ length: 21 }, (_, i) => ({ repoUrl: `https://github.com/x/repo${i}.git`, database: "postgres" }))
+), null);
 
 // database: only known engines
 assert.strictEqual(validDatabase("postgres"), "postgres");

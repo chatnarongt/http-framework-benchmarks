@@ -6,7 +6,7 @@ import {
   boundedInt,
   validDatabase,
   validLimit,
-  validRepoUrls,
+  validRepos,
   validTestTypes,
 } from "@/lib/engine/input-validation";
 
@@ -14,10 +14,18 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const repoUrls = validRepoUrls(body.repoUrls);
-    if (!repoUrls) {
+    // New shape: repos: [{ repoUrl, database }]. Legacy shape: repoUrls + one
+    // global database — mapped onto the list so old callers keep working.
+    const rawRepos = Array.isArray(body.repos)
+      ? body.repos
+      : (Array.isArray(body.repoUrls) ? body.repoUrls : []).map((u: unknown) => ({
+          repoUrl: u,
+          database: body.database,
+        }));
+    const repos = validRepos(rawRepos);
+    if (!repos) {
       return NextResponse.json(
-        { error: "repoUrls must contain at least one valid git URL or local path" },
+        { error: "repos must contain at least one valid git URL or local path" },
         { status: 400 }
       );
     }
@@ -29,8 +37,6 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-
-    const database = validDatabase(body.database);
 
     const vus = boundedInt(body.vus, 1, 1000, DEFAULT_BENCHMARK_CONFIG.vus);
     const totalRecords = boundedInt(body.totalRecords, 1, 10_000_000, DEFAULT_BENCHMARK_CONFIG.totalRecords);
@@ -45,7 +51,7 @@ export async function POST(req: Request) {
       body.typeWorkloads && typeof body.typeWorkloads === "object" ? body.typeWorkloads : undefined;
 
     const runCount = boundedInt(body.runCount, 1, 50, 1);
-    if (repoUrls.length * runCount > 50) {
+    if (repos.length * runCount > 50) {
       return NextResponse.json(
         { error: "repos × runs per repo must not exceed 50 total runs" },
         { status: 400 }
@@ -54,7 +60,7 @@ export async function POST(req: Request) {
 
     // One row per repo per repeat, created atomically: a partial batch must never be enqueued.
     const runs = await prisma.$transaction(
-      repoUrls.flatMap((repoUrl) =>
+      repos.flatMap(({ repoUrl, database }) =>
         Array.from({ length: runCount }, () =>
           prisma.benchmarkRun.create({
             data: {
@@ -81,7 +87,7 @@ export async function POST(req: Request) {
         .enqueue(run.id, {
           repoName: run.repoName,
           repoUrl: run.repoUrl,
-          database,
+          database: validDatabase(run.database),
           types,
           vus,
           totalRecords,

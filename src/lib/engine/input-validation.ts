@@ -53,6 +53,37 @@ export function validDatabase(raw: unknown): DatabaseType {
   return DATABASE_ENGINES.includes(raw as DatabaseType) ? (raw as DatabaseType) : DEFAULT_BENCHMARK_CONFIG.database;
 }
 
+export interface RepoEntry {
+  repoUrl: string;
+  database: DatabaseType;
+}
+
+/**
+ * Batch variant pairing each repo URL with its own target database.
+ * Same blank-drop / dedupe / cap rules as `validRepoUrls`, keyed on the
+ * url+database pair so the same repo may run against different engines.
+ * Returns null when nothing survives or when any non-blank entry is invalid.
+ */
+export function validRepos(raw: unknown): RepoEntry[] | null {
+  const list: unknown[] = Array.isArray(raw) ? raw : [];
+  const out: RepoEntry[] = [];
+  const seen = new Set<string>();
+  for (const item of list) {
+    const entry = (item && typeof item === "object" ? item : {}) as Record<string, unknown>;
+    const s = String(entry.repoUrl ?? "").trim();
+    if (!s) continue;
+    const repoUrl = validRepoUrl(s);
+    if (!repoUrl) return null;
+    const repo: RepoEntry = { repoUrl, database: validDatabase(entry.database) };
+    const key = `${repoUrl}\n${repo.database}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(repo);
+    if (out.length > MAX_REPO_URLS) return null;
+  }
+  return out.length > 0 ? out : null;
+}
+
 export function boundedInt(value: unknown, min: number, max: number, fallback: number): number {
   const n = Number(value);
   return Number.isFinite(n) && n >= min && n <= max ? Math.trunc(n) : fallback;

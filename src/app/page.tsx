@@ -4,15 +4,25 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ALL_TEST_TYPES, DatabaseType, TestType, extractRepoName, DEFAULT_BENCHMARK_CONFIG } from "@/lib/engine/types";
 import { DATABASE_ENGINES, databaseProfiles } from "@/lib/engine/database-profiles";
-import { Database, Play, CheckSquare, Square, Settings, Layers, Zap, RotateCcw, Plus, X } from "lucide-react";
+import { validDatabase } from "@/lib/engine/input-validation";
+import { Play, CheckSquare, Square, Settings, Layers, Zap, RotateCcw, Plus, X, ChevronDown } from "lucide-react";
 
 const STORAGE_KEY = "benchhub_config";
+
+interface RepoEntry {
+  url: string;
+  database: DatabaseType;
+}
+
+const defaultRepo = (): RepoEntry => ({
+  url: DEFAULT_BENCHMARK_CONFIG.repoUrl,
+  database: DEFAULT_BENCHMARK_CONFIG.database,
+});
 
 export default function SetupPage() {
   const router = useRouter();
 
-  const [repoUrls, setRepoUrls] = useState<string[]>([DEFAULT_BENCHMARK_CONFIG.repoUrl]);
-  const [database, setDatabase] = useState<DatabaseType>(DEFAULT_BENCHMARK_CONFIG.database);
+  const [repos, setRepos] = useState<RepoEntry[]>([defaultRepo()]);
   const [selectedTypes, setSelectedTypes] = useState<TestType[]>([...ALL_TEST_TYPES]);
   const [vus, setVus] = useState(DEFAULT_BENCHMARK_CONFIG.vus);
   const [totalRecords, setTotalRecords] = useState(DEFAULT_BENCHMARK_CONFIG.totalRecords);
@@ -38,12 +48,21 @@ export default function SetupPage() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed.repoUrls) && parsed.repoUrls.length > 0) {
-          setRepoUrls(parsed.repoUrls.map((u: unknown) => String(u)));
-        } else if (typeof parsed.repoUrl === "string") {
-          setRepoUrls([parsed.repoUrl]);
+        if (Array.isArray(parsed.repos) && parsed.repos.length > 0) {
+          setRepos(
+            parsed.repos.map((r: unknown) => {
+              const e = (r && typeof r === "object" ? r : {}) as Record<string, unknown>;
+              return { url: String(e.url ?? ""), database: validDatabase(e.database) };
+            })
+          );
+        } else if (Array.isArray(parsed.repoUrls) && parsed.repoUrls.length > 0) {
+          setRepos(
+            parsed.repoUrls.map((u: unknown) => ({
+              url: String(u),
+              database: validDatabase(parsed.database),
+            }))
+          );
         }
-        if (parsed.database !== undefined) setDatabase(parsed.database);
         if (Array.isArray(parsed.selectedTypes) && parsed.selectedTypes.length > 0) {
           setSelectedTypes(parsed.selectedTypes);
         }
@@ -71,8 +90,7 @@ export default function SetupPage() {
     if (!isLoaded) return;
     try {
       const config = {
-        repoUrls,
-        database,
+        repos,
         selectedTypes,
         vus,
         totalRecords,
@@ -89,8 +107,7 @@ export default function SetupPage() {
     } catch { }
   }, [
     isLoaded,
-    repoUrls,
-    database,
+    repos,
     selectedTypes,
     vus,
     totalRecords,
@@ -126,20 +143,18 @@ export default function SetupPage() {
     setTypeWorkloads({});
   };
 
-  const updateRepoUrl = (index: number, value: string) => {
-    setRepoUrls((prev) => prev.map((u, i) => (i === index ? value : u)));
-  };
+  const updateRepo = (index: number, patch: Partial<RepoEntry>) =>
+    setRepos((prev) => prev.map((r, i) => (i === index ? { ...r, ...patch } : r)));
 
-  const addRepoUrl = () => setRepoUrls((prev) => [...prev, ""]);
+  const addRepo = () => setRepos((prev) => [...prev, { url: "", database: DEFAULT_BENCHMARK_CONFIG.database }]);
 
-  const removeRepoUrl = (index: number) =>
-    setRepoUrls((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
+  const removeRepo = (index: number) =>
+    setRepos((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
 
-  const activeRepos = repoUrls.map((u) => u.trim()).filter(Boolean);
+  const activeRepos = repos.filter((r) => r.url.trim());
 
   const resetDefaults = () => {
-    setRepoUrls([DEFAULT_BENCHMARK_CONFIG.repoUrl]);
-    setDatabase(DEFAULT_BENCHMARK_CONFIG.database);
+    setRepos([defaultRepo()]);
     setSelectedTypes([...ALL_TEST_TYPES]);
     setVus(DEFAULT_BENCHMARK_CONFIG.vus);
     setTotalRecords(DEFAULT_BENCHMARK_CONFIG.totalRecords);
@@ -185,8 +200,7 @@ export default function SetupPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          repoUrls: activeRepos,
-          database,
+          repos: activeRepos.map((r) => ({ repoUrl: r.url.trim(), database: r.database })),
           types: selectedTypes,
           vus,
           totalRecords,
@@ -220,7 +234,7 @@ export default function SetupPage() {
           Benchmark Setup
         </h1>
         <p className="mt-2 text-slate-400 text-sm">
-          Configure test parameters, target repository, and target database. Executes inside Kubernetes using k6.
+          Configure test parameters, target repositories, and per-repo target database. Executes inside Kubernetes using k6.
         </p>
       </div>
 
@@ -250,28 +264,45 @@ export default function SetupPage() {
           </div>
 
           <div className="space-y-2">
-            {repoUrls.map((url, index) => (
-              <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <input
-                  type="text"
-                  value={url}
-                  onChange={(e) => updateRepoUrl(index, e.target.value)}
-                  className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-sky-500 font-mono"
-                  placeholder="https://github.com/..."
-                />
-                <div className="flex items-center gap-2 sm:w-56">
-                  <span className="text-xs text-slate-500 flex-1 truncate">
+            {repos.map((repo, index) => (
+              <div key={index} className="flex flex-col sm:flex-row sm:items-end gap-2">
+                <div className="flex-1 space-y-1">
+                  <div className="text-xs text-slate-500 truncate">
                     Name:{" "}
                     <span className="text-sky-400 font-mono font-semibold">
-                      {url.trim() ? extractRepoName(url) : "—"}
+                      {repo.url.trim() ? extractRepoName(repo.url) : "—"}
                     </span>
-                  </span>
+                  </div>
+                  <input
+                    type="text"
+                    value={repo.url}
+                    onChange={(e) => updateRepo(index, { url: e.target.value })}
+                    className="w-full h-9 bg-slate-950 border border-slate-700 rounded-lg px-3 text-slate-100 text-sm focus:outline-none focus:border-sky-500 font-mono"
+                    placeholder="https://github.com/..."
+                  />
+                </div>
+                <div className="relative sm:w-36">
+                  <select
+                    value={repo.database}
+                    onChange={(e) => updateRepo(index, { database: validDatabase(e.target.value) })}
+                    className="w-full h-9 appearance-none bg-slate-950 border border-slate-700 rounded-lg pl-3 pr-8 text-slate-100 text-sm focus:outline-none focus:border-sky-500"
+                    title="Target database for this repository"
+                  >
+                    {DATABASE_ENGINES.map((id) => (
+                      <option key={id} value={id}>
+                        {databaseProfiles[id].label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                </div>
+                <div className="flex items-center h-9">
                   <button
                     type="button"
-                    onClick={() => removeRepoUrl(index)}
-                    disabled={repoUrls.length <= 1}
+                    onClick={() => removeRepo(index)}
+                    disabled={repos.length <= 1}
                     className="p-1.5 text-slate-500 hover:text-white rounded transition-colors disabled:opacity-30 disabled:hover:text-slate-500 disabled:cursor-not-allowed"
-                    title={repoUrls.length <= 1 ? "At least one repository is required" : "Remove repository"}
+                    title={repos.length <= 1 ? "At least one repository is required" : "Remove repository"}
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -283,7 +314,7 @@ export default function SetupPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-500 gap-2">
             <button
               type="button"
-              onClick={addRepoUrl}
+              onClick={addRepo}
               className="inline-flex items-center gap-1.5 self-start px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -304,33 +335,6 @@ export default function SetupPage() {
               </ul>
             </div>
           )}
-        </div>
-
-        {/* Database Selection */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-slate-200">
-            <Database className="w-4 h-4 text-sky-400" />
-            <span>Target Database</span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {DATABASE_ENGINES.map((id) => {
-              const db = { id, label: databaseProfiles[id].label, desc: databaseProfiles[id].description };
-              return (
-              <button
-                key={db.id}
-                type="button"
-                onClick={() => setDatabase(db.id)}
-                className={`p-4 rounded-lg border text-left transition-all ${database === db.id
-                  ? "border-sky-500 bg-sky-950/30 ring-1 ring-sky-500"
-                  : "border-slate-800 bg-slate-950/50 hover:border-slate-700"
-                  }`}
-              >
-                <div className="font-semibold text-white text-sm">{db.label}</div>
-                <div className="text-xs text-slate-400 mt-1">{db.desc}</div>
-              </button>
-              );
-            })}
-          </div>
         </div>
 
         {/* Test Types Selection */}
