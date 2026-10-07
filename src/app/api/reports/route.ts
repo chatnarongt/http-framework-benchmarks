@@ -6,7 +6,14 @@ import { waitForTerminalStatus } from "@/lib/engine/run-store";
 export async function GET() {
   try {
     const runs = await prisma.benchmarkRun.findMany({
-      orderBy: { createdAt: "desc" },
+      orderBy: [
+        {
+          createdAt: "desc"
+        },
+        {
+          id: "desc"
+        }
+      ],
       // logs are unbounded; the list page polls this and never renders them.
       omit: { logs: true },
       include: {
