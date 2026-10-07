@@ -8,6 +8,7 @@ const suites = [
 	"test/peak-tracker.test.ts",
 	"test/run-store.test.ts",
 	"test/summary.test.ts",
+	"test/run-filters.test.ts",
 	"test/orchestrator.test.ts",
 	"test/self-check.ts",
 ];
