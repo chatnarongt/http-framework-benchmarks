@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import { aggregateSummary, type SummaryRun } from "../src/lib/summary";
 
-console.log("summary: aggregation of best scores per framework/database/testType...");
+console.log("summary: aggregation of best and average scores per framework/database/testType...");
 
 const runs: SummaryRun[] = [
 	{
@@ -15,6 +15,7 @@ const runs: SummaryRun[] = [
 				latencyAverageMs: 20,
 				cpuPeakPercent: 80,
 				memPeakPercent: 50,
+				memPeakUsage: 512,
 				dbPeakConnectionPercent: 90,
 			},
 			{
@@ -38,6 +39,7 @@ const runs: SummaryRun[] = [
 				latencyAverageMs: 15,
 				cpuPeakPercent: 95,
 				memPeakPercent: 60,
+				memPeakUsage: 256,
 				dbPeakConnectionPercent: 70,
 			},
 		],
@@ -89,44 +91,60 @@ const runs: SummaryRun[] = [
 	},
 ];
 
-const rows = aggregateSummary(runs);
+const { best, avg } = aggregateSummary(runs);
+
+const pick = (rows: typeof best) =>
+	rows.find(
+		(r) => r.testType === "read-one" && r.database === "postgres" && r.framework === "fastify",
+	);
 
 // best across runs: max throughput, min latency/resources
-const fastifyPg = rows.find(
-	(r) => r.testType === "read-one" && r.database === "postgres" && r.framework === "fastify",
-);
-assert.ok(fastifyPg);
-assert.strictEqual(fastifyPg.requestPerSecond, 120);
-assert.strictEqual(fastifyPg.latencyAverageMs, 15);
-assert.strictEqual(fastifyPg.cpuPeakPercent, 80);
-assert.strictEqual(fastifyPg.memPeakPercent, 50);
-assert.strictEqual(fastifyPg.dbPeakConnectionPercent, 70);
+const bestRow = pick(best);
+assert.ok(bestRow);
+assert.strictEqual(bestRow.requestPerSecond, 120);
+assert.strictEqual(bestRow.latencyAverageMs, 15);
+assert.strictEqual(bestRow.cpuPeakPercent, 80);
+assert.strictEqual(bestRow.memPeakPercent, 50);
+assert.strictEqual(bestRow.memPeakUsage, 512);
+assert.strictEqual(bestRow.dbPeakConnectionPercent, 70);
 
-// FAILED runs excluded
-assert.ok(!rows.some((r) => r.requestPerSecond === 9999));
+// average across runs: mean of each metric
+const avgRow = pick(avg);
+assert.ok(avgRow);
+assert.strictEqual(avgRow.requestPerSecond, 110);
+assert.strictEqual(avgRow.latencyAverageMs, 17.5);
+assert.strictEqual(avgRow.cpuPeakPercent, 87.5);
+assert.strictEqual(avgRow.memPeakPercent, 55);
+assert.strictEqual(avgRow.memPeakUsage, 384);
+assert.strictEqual(avgRow.dbPeakConnectionPercent, 80);
+
+// FAILED runs excluded from both slices
+assert.ok(!best.some((r) => r.requestPerSecond === 9999));
+assert.ok(!avg.some((r) => r.requestPerSecond === 9999));
 
 // empty repoName falls back
-const fallback = rows.find((r) => r.framework === "postgres-unknown");
+const fallback = best.find((r) => r.framework === "postgres-unknown");
 assert.ok(fallback);
 assert.strictEqual(fallback.requestPerSecond, 10);
+assert.strictEqual(avg.find((r) => r.framework === "postgres-unknown")?.requestPerSecond, 10);
 
 // same test type, separate databases stay separate rows
-const fastifyMs = rows.find((r) => r.database === "mssql" && r.framework === "fastify");
+const fastifyMs = best.find((r) => r.database === "mssql" && r.framework === "fastify");
 assert.ok(fastifyMs);
 assert.strictEqual(fastifyMs.requestPerSecond, 50);
 
 // unknown test types dropped
-assert.ok(!rows.some((r) => r.testType === ("bogus" as any)));
+assert.ok(!best.some((r) => r.testType === ("bogus" as any)));
 
 // sorted by test type order then database
-assert.deepStrictEqual(
-	rows.map((r) => `${r.testType}:${r.database}:${r.framework}`),
-	[
-		"json:postgres:fastify",
-		"read-one:mssql:fastify",
-		"read-one:postgres:fastify",
-		"read-one:postgres:postgres-unknown",
-	],
-);
+const keys = (rows: typeof best) => rows.map((r) => `${r.testType}:${r.database}:${r.framework}`);
+const expected = [
+	"json:postgres:fastify",
+	"read-one:mssql:fastify",
+	"read-one:postgres:fastify",
+	"read-one:postgres:postgres-unknown",
+];
+assert.deepStrictEqual(keys(best), expected);
+assert.deepStrictEqual(keys(avg), expected);
 
 console.log("summary: OK");

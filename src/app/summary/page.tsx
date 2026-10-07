@@ -15,20 +15,22 @@ import {
 } from "recharts";
 import { cn } from "@/lib/cn";
 import { ALL_TEST_TYPES } from "@/lib/engine/types";
-import type { SummaryRow } from "@/lib/summary";
+import type { AggMode, SummaryAggregate } from "@/lib/summary";
 
 const METRIC_CONFIGS = [
-	{ key: "requestPerSecond", label: "Throughput (best)", unit: "req/s", hint: "higher is better" },
-	{ key: "latencyAverageMs", label: "Avg Latency (best)", unit: "ms", hint: "lower is better" },
-	{ key: "cpuPeakPercent", label: "App CPU Peak (best)", unit: "%", hint: "lower is better" },
-	{ key: "memPeakPercent", label: "App Memory Peak (best)", unit: "%", hint: "lower is better" },
+	{ key: "requestPerSecond", label: "Throughput", unit: "req/s", hint: "higher is better" },
+	{ key: "latencyAverageMs", label: "Avg Latency", unit: "ms", hint: "lower is better" },
+	{ key: "cpuPeakPercent", label: "App CPU Peak", unit: "%", hint: "lower is better" },
+	{ key: "memPeakPercent", label: "App Memory Peak", unit: "%", hint: "lower is better" },
 	{
 		key: "dbPeakConnectionPercent",
-		label: "DB Connections Peak (best)",
+		label: "DB Connections Peak",
 		unit: "%",
 		hint: "lower is better",
 	},
 ] as const;
+
+const AGG_MODES = ["best", "avg"] as const;
 
 type MetricKey = (typeof METRIC_CONFIGS)[number]["key"];
 
@@ -43,9 +45,10 @@ function formatNumber(value: number) {
 }
 
 export default function SummaryPage() {
-	const [rows, setRows] = useState<SummaryRow[]>([]);
+	const [data, setData] = useState<SummaryAggregate>({ best: [], avg: [] });
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [mode, setMode] = useState<AggMode>("avg");
 	const [testType, setTestType] = useState<string>("read-one");
 	const [database, setDatabase] = useState<string>("");
 	const [sortBy, setSortBy] = useState<SortBy>("best");
@@ -63,9 +66,9 @@ export default function SummaryPage() {
 	useEffect(() => {
 		fetch("/api/summary")
 			.then((res) => res.json())
-			.then((data) => {
-				if (Array.isArray(data)) setRows(data);
-				else setError(data.error || "Failed to load summary");
+			.then((payload) => {
+				if (Array.isArray(payload?.best) && Array.isArray(payload?.avg)) setData(payload);
+				else setError(payload?.error || "Failed to load summary");
 				setLoading(false);
 			})
 			.catch(() => {
@@ -77,6 +80,7 @@ export default function SummaryPage() {
 	useEffect(() => {
 		try {
 			const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}");
+			if (AGG_MODES.includes(saved.mode)) setMode(saved.mode);
 			if (typeof saved.testType === "string") setTestType(saved.testType);
 			if (typeof saved.database === "string") setDatabase(saved.database);
 			if (SORT_OPTIONS.includes(saved.sortBy)) setSortBy(saved.sortBy);
@@ -94,9 +98,11 @@ export default function SummaryPage() {
 		if (!filtersLoaded) return;
 		localStorage.setItem(
 			STORAGE_KEY,
-			JSON.stringify({ testType, database, sortBy, metrics: visibleMetrics }),
+			JSON.stringify({ mode, testType, database, sortBy, metrics: visibleMetrics }),
 		);
-	}, [filtersLoaded, testType, database, sortBy, visibleMetrics]);
+	}, [filtersLoaded, mode, testType, database, sortBy, visibleMetrics]);
+
+	const rows = data[mode];
 
 	const availableTestTypes = useMemo(() => {
 		const present = new Set(rows.map((r) => r.testType));
@@ -200,12 +206,33 @@ export default function SummaryPage() {
 					<span>Summary</span>
 				</h1>
 				<p className="mt-1 text-slate-400 text-xs">
-					Best score per framework for the selected database and test type. Resources pick the
-					lowest peak; throughput the highest req/s.
+					{mode === "avg"
+						? "Average score per framework across completed runs for the selected database and test type."
+						: "Best score per framework for the selected database and test type. Resources pick the lowest peak; throughput the highest req/s."}
 				</p>
 			</div>
 
 			<div className="space-y-3">
+				<div className="flex flex-wrap items-center gap-2">
+					<span className="mr-1 font-bold text-[11px] text-slate-500 uppercase tracking-wider">
+						Aggregate
+					</span>
+					{AGG_MODES.map((m) => (
+						<button
+							type="button"
+							key={m}
+							onClick={() => setMode(m)}
+							className={cn(
+								"rounded-lg border px-3 py-1.5 font-mono font-semibold text-xs transition-colors",
+								m === mode
+									? "border-sky-500 bg-sky-500 text-slate-950"
+									: "border-slate-800 bg-slate-900 text-slate-300 hover:border-slate-600",
+							)}
+						>
+							{m === "avg" ? "Average" : "Best"}
+						</button>
+					))}
+				</div>
 				<div className="flex flex-wrap items-center gap-2">
 					<span className="mr-1 font-bold text-[11px] text-slate-500 uppercase tracking-wider">
 						Database
@@ -271,7 +298,7 @@ export default function SummaryPage() {
 										: "border-slate-500",
 								)}
 							/>
-							{label.replace(" (best)", "")}
+							{label}
 						</button>
 					))}
 				</div>
@@ -316,7 +343,9 @@ export default function SummaryPage() {
 							className="flex flex-col rounded-xl border border-slate-800 bg-slate-900 p-6"
 						>
 							<div className="mb-4 flex items-baseline justify-between">
-								<h2 className="font-bold text-slate-200 text-sm">{label}</h2>
+								<h2 className="font-bold text-slate-200 text-sm">{`${label} (${
+									mode === "avg" ? "average" : "best"
+								})`}</h2>
 								<span className="text-[11px] text-slate-500">{hint}</span>
 							</div>
 							<div style={{ height: frameworks.length * 26 + 16 }}>
