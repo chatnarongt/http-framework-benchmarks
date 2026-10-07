@@ -53,6 +53,7 @@ function testRunContextDerivation() {
 		"abc12345",
 		"suffix must be last 8 alphanumeric chars of run id, lowercased",
 	);
+	assert.strictEqual(ctx.namespace, "benchmark");
 	assert.strictEqual(ctx.imageTag, "nestjs-platform-express-node:abc12345");
 	assert.strictEqual(ctx.app.label, "app-abc12345");
 	assert.strictEqual(ctx.app.deploymentName, "app-deployment-abc12345");
@@ -92,6 +93,12 @@ function testRunContextDerivation() {
 		"app-deployment-abc12345",
 		"app names must not depend on database",
 	);
+
+	const customNsCtx = createRunContext(
+		"clxxxxxxxxxxxxxxxxxxxxABC12345",
+		makeConfig({ namespace: "custom-bench" }),
+	);
+	assert.strictEqual(customNsCtx.namespace, "custom-bench");
 
 	// Repo name sanitization
 	const weird = createRunContext("run00000001", makeConfig({ repoName: "My.Repo_42!!" }));

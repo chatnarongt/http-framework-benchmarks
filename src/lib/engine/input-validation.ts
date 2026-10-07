@@ -104,3 +104,15 @@ export function validLimit(value: unknown, fallback: string): string {
 	const s = String(value || "").trim();
 	return LIMIT_PATTERN.test(s) ? s : fallback;
 }
+
+const NAMESPACE_PATTERN = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/;
+
+export function validNamespace(
+	value: unknown,
+	fallback: string = DEFAULT_BENCHMARK_CONFIG.namespace,
+): string {
+	const s = String(value || "")
+		.trim()
+		.toLowerCase();
+	return s.length > 0 && s.length <= 63 && NAMESPACE_PATTERN.test(s) ? s : fallback;
+}

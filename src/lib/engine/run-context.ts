@@ -1,9 +1,10 @@
-import { type BenchmarkConfig, extractRepoName } from "./types";
+import { type BenchmarkConfig, DEFAULT_BENCHMARK_CONFIG, extractRepoName } from "./types";
 
 export interface RunContext {
 	readonly runId: string;
 	readonly repoName: string;
 	readonly suffix: string;
+	readonly namespace: string;
 	readonly imageTag: string;
 	readonly database: BenchmarkConfig["database"];
 	readonly appCpuLimit: string;
@@ -46,11 +47,13 @@ export function createRunContext(runId: string, config: BenchmarkConfig): RunCon
 		.replace(/[^a-z0-9]/g, "")
 		.slice(-8);
 	const slug = repoSlugOf(repoName);
+	const namespace = config.namespace || DEFAULT_BENCHMARK_CONFIG.namespace || "benchmark";
 
 	const base = Object.freeze({
 		runId,
 		repoName,
 		suffix,
+		namespace,
 		imageTag: `${slug}:${suffix}`,
 		database: config.database,
 		appCpuLimit: config.appCpuLimit,

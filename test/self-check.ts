@@ -54,6 +54,7 @@ async function testPrisma() {
 	});
 	assert(run.id, "run id should exist");
 	assert.strictEqual(run.repoName, "nestjs-platform-express-node");
+	assert.strictEqual(run.namespace, "benchmark");
 	assert.strictEqual(run.totalRecords, 100000);
 	assert.strictEqual(run.typeWorkloads, sampleWorkloads);
 

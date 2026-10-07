@@ -38,6 +38,8 @@ export class FakeCluster implements Cluster {
 
 	constructor(private hooks: { onApply?: (manifest: string) => void } = {}) {}
 
+	async ensureNamespace(): Promise<void> {}
+
 	async applyManifest(manifest: string): Promise<void> {
 		this.appliedManifests.push(manifest);
 		this.hooks.onApply?.(manifest);

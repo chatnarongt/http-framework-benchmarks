@@ -59,6 +59,7 @@ export default function SetupPage() {
 	>({});
 	const [showTypeOverrides, setShowTypeOverrides] = useState(false);
 
+	const [namespace, setNamespace] = useState(DEFAULT_BENCHMARK_CONFIG.namespace);
 	const [appCpuLimit, setAppCpuLimit] = useState(DEFAULT_BENCHMARK_CONFIG.appCpuLimit);
 	const [appMemLimit, setAppMemLimit] = useState(DEFAULT_BENCHMARK_CONFIG.appMemLimit);
 	const [dbCpuLimit, setDbCpuLimit] = useState(DEFAULT_BENCHMARK_CONFIG.dbCpuLimit);
@@ -126,6 +127,7 @@ export default function SetupPage() {
 				if (parsed.showTypeOverrides !== undefined) {
 					setShowTypeOverrides(Boolean(parsed.showTypeOverrides));
 				}
+				if (parsed.namespace !== undefined) setNamespace(String(parsed.namespace));
 				if (parsed.appCpuLimit !== undefined) setAppCpuLimit(parsed.appCpuLimit);
 				if (parsed.appMemLimit !== undefined) setAppMemLimit(parsed.appMemLimit);
 				if (parsed.dbCpuLimit !== undefined) setDbCpuLimit(parsed.dbCpuLimit);
@@ -150,6 +152,7 @@ export default function SetupPage() {
 				showTypeOverrides,
 				maxPoolSize,
 				runCount,
+				namespace,
 				appCpuLimit,
 				appMemLimit,
 				dbCpuLimit,
@@ -169,6 +172,7 @@ export default function SetupPage() {
 		showTypeOverrides,
 		maxPoolSize,
 		runCount,
+		namespace,
 		appCpuLimit,
 		appMemLimit,
 		dbCpuLimit,
@@ -245,6 +249,7 @@ export default function SetupPage() {
 		setRunCount(1);
 		setTypeWorkloads({});
 		setShowTypeOverrides(false);
+		setNamespace(DEFAULT_BENCHMARK_CONFIG.namespace);
 		setAppCpuLimit(DEFAULT_BENCHMARK_CONFIG.appCpuLimit);
 		setAppMemLimit(DEFAULT_BENCHMARK_CONFIG.appMemLimit);
 		setDbCpuLimit(DEFAULT_BENCHMARK_CONFIG.dbCpuLimit);
@@ -292,6 +297,7 @@ export default function SetupPage() {
 					typeWorkloads,
 					maxPoolSize,
 					runCount,
+					namespace: namespace.trim() || DEFAULT_BENCHMARK_CONFIG.namespace,
 					appCpuLimit,
 					appMemLimit,
 					dbCpuLimit,
@@ -807,54 +813,69 @@ export default function SetupPage() {
 					</button>
 
 					{showAdvanced && (
-						<div className="mt-4 grid grid-cols-2 gap-4 border-slate-800 border-t pt-4 md:grid-cols-4">
+						<div className="mt-4 space-y-4 border-slate-800 border-t pt-4">
 							<div>
-								<label htmlFor="cfg-app-cpu" className="mb-1 block text-slate-400 text-xs">
-									App CPU Limit
+								<label htmlFor="cfg-namespace" className="mb-1 block text-slate-400 text-xs">
+									Kubernetes Namespace
 								</label>
 								<input
-									id="cfg-app-cpu"
+									id="cfg-namespace"
 									type="text"
-									value={appCpuLimit}
-									onChange={(e) => setAppCpuLimit(e.target.value)}
-									className="w-full rounded border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-slate-100 text-xs"
+									value={namespace}
+									onChange={(e) => setNamespace(e.target.value)}
+									placeholder="benchmark"
+									className="w-full max-w-xs rounded border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-slate-100 text-xs"
 								/>
 							</div>
-							<div>
-								<label htmlFor="cfg-app-mem" className="mb-1 block text-slate-400 text-xs">
-									App Mem Limit
-								</label>
-								<input
-									id="cfg-app-mem"
-									type="text"
-									value={appMemLimit}
-									onChange={(e) => setAppMemLimit(e.target.value)}
-									className="w-full rounded border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-slate-100 text-xs"
-								/>
-							</div>
-							<div>
-								<label htmlFor="cfg-db-cpu" className="mb-1 block text-slate-400 text-xs">
-									DB CPU Limit
-								</label>
-								<input
-									id="cfg-db-cpu"
-									type="text"
-									value={dbCpuLimit}
-									onChange={(e) => setDbCpuLimit(e.target.value)}
-									className="w-full rounded border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-slate-100 text-xs"
-								/>
-							</div>
-							<div>
-								<label htmlFor="cfg-db-mem" className="mb-1 block text-slate-400 text-xs">
-									DB Mem Limit
-								</label>
-								<input
-									id="cfg-db-mem"
-									type="text"
-									value={dbMemLimit}
-									onChange={(e) => setDbMemLimit(e.target.value)}
-									className="w-full rounded border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-slate-100 text-xs"
-								/>
+							<div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+								<div>
+									<label htmlFor="cfg-app-cpu" className="mb-1 block text-slate-400 text-xs">
+										App CPU Limit
+									</label>
+									<input
+										id="cfg-app-cpu"
+										type="text"
+										value={appCpuLimit}
+										onChange={(e) => setAppCpuLimit(e.target.value)}
+										className="w-full rounded border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-slate-100 text-xs"
+									/>
+								</div>
+								<div>
+									<label htmlFor="cfg-app-mem" className="mb-1 block text-slate-400 text-xs">
+										App Mem Limit
+									</label>
+									<input
+										id="cfg-app-mem"
+										type="text"
+										value={appMemLimit}
+										onChange={(e) => setAppMemLimit(e.target.value)}
+										className="w-full rounded border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-slate-100 text-xs"
+									/>
+								</div>
+								<div>
+									<label htmlFor="cfg-db-cpu" className="mb-1 block text-slate-400 text-xs">
+										DB CPU Limit
+									</label>
+									<input
+										id="cfg-db-cpu"
+										type="text"
+										value={dbCpuLimit}
+										onChange={(e) => setDbCpuLimit(e.target.value)}
+										className="w-full rounded border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-slate-100 text-xs"
+									/>
+								</div>
+								<div>
+									<label htmlFor="cfg-db-mem" className="mb-1 block text-slate-400 text-xs">
+										DB Mem Limit
+									</label>
+									<input
+										id="cfg-db-mem"
+										type="text"
+										value={dbMemLimit}
+										onChange={(e) => setDbMemLimit(e.target.value)}
+										className="w-full rounded border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-slate-100 text-xs"
+									/>
+								</div>
 							</div>
 						</div>
 					)}

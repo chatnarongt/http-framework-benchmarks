@@ -23,6 +23,7 @@ model BenchmarkRun {
   repoName        String            @default("")
   repoUrl         String
   database        String
+  namespace       String            @default("benchmark")
   vus             Int               @default(100)
   totalRecords    Int               @default(100000)
   warmupSeconds   Int               @default(30)

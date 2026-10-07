@@ -43,6 +43,7 @@ export interface BenchmarkConfig {
 	repoName?: string;
 	repoUrl: string;
 	database: DatabaseType;
+	namespace?: string;
 	types: TestType[];
 	vus: number;
 	totalRecords: number;
@@ -68,10 +69,14 @@ export const DEFAULT_BENCHMARK_CONFIG: Readonly<
 		| "appMemLimit"
 		| "dbCpuLimit"
 		| "dbMemLimit"
-	> & { warmupSeconds: number; cooldownSeconds: number }
+	> & { warmupSeconds: number; cooldownSeconds: number; namespace: string }
 > = Object.freeze({
 	repoUrl: "https://github.com/chatnarongt/nestjs-platform-express-node.git",
 	database: "postgres",
+	namespace:
+		(typeof process !== "undefined" &&
+			(process.env.NEXT_PUBLIC_BENCHMARK_NAMESPACE || process.env.BENCHMARK_NAMESPACE)) ||
+		"benchmark",
 	vus: 100,
 	totalRecords: 100000,
 	warmupSeconds: 30,

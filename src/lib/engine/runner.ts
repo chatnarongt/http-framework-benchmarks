@@ -92,7 +92,7 @@ async function resolveSession(
 		const initialLogs = await loadExistingLogs(runId);
 		const store = createRunStore(runId, new PrismaRunRecordSink(prisma), initialLogs);
 		const session: PhaseSession = {
-			cluster: new KubectlCluster(),
+			cluster: new KubectlCluster(ctx.namespace),
 			store,
 			ctx,
 			config,
@@ -142,6 +142,8 @@ export async function executeBenchmark(
 		await store.appendLog(
 			`[Orchestrator] Database: ${config.database}, VUs: ${config.vus}, Records: ${config.totalRecords}\n`,
 		);
+		await store.appendLog(`[Kubernetes] Target namespace: ${s.ctx.namespace}\n`);
+		await s.cluster.ensureNamespace(s.onLog);
 
 		await phaseBuildImage(s);
 		gate();

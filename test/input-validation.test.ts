@@ -3,6 +3,7 @@ import {
 	boundedInt,
 	validDatabase,
 	validLimit,
+	validNamespace,
 	validRepos,
 	validRepoUrl,
 	validRepoUrls,
@@ -150,5 +151,16 @@ assert.strictEqual(validLimit("512Mi", "1"), "512Mi");
 assert.strictEqual(validLimit("4", "1"), "4");
 assert.strictEqual(validLimit("1; kubectl delete all", "1"), "1");
 assert.strictEqual(validLimit("../../etc", "8Gi"), "8Gi");
+
+// namespace: valid dns label or fallback
+assert.strictEqual(validNamespace("my-benchmark"), "my-benchmark");
+assert.strictEqual(validNamespace("BENCH-1"), "bench-1");
+assert.strictEqual(validNamespace("default; rm -rf"), "benchmark");
+assert.strictEqual(validNamespace("-invalid-"), "benchmark");
+assert.strictEqual(validNamespace(""), "benchmark");
+assert.strictEqual(validNamespace(undefined), "benchmark");
+assert.strictEqual(validNamespace("a".repeat(64)), "benchmark");
+assert.strictEqual(validNamespace("custom", "fallback-ns"), "custom");
+assert.strictEqual(validNamespace("invalid name!", "fallback-ns"), "fallback-ns");
 
 console.log("input-validation tests passed.");

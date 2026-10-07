@@ -3,6 +3,7 @@ import {
 	boundedInt,
 	validDatabase,
 	validLimit,
+	validNamespace,
 	validRepos,
 	validTestTypes,
 } from "@/lib/engine/input-validation";
@@ -68,6 +69,7 @@ export async function POST(req: Request) {
 		const appMemLimit = validLimit(body.appMemLimit, DEFAULT_BENCHMARK_CONFIG.appMemLimit);
 		const dbCpuLimit = validLimit(body.dbCpuLimit, DEFAULT_BENCHMARK_CONFIG.dbCpuLimit);
 		const dbMemLimit = validLimit(body.dbMemLimit, DEFAULT_BENCHMARK_CONFIG.dbMemLimit);
+		const namespace = validNamespace(body.namespace, DEFAULT_BENCHMARK_CONFIG.namespace);
 
 		const typeWorkloads =
 			body.typeWorkloads && typeof body.typeWorkloads === "object" ? body.typeWorkloads : undefined;
@@ -100,6 +102,7 @@ export async function POST(req: Request) {
 							repoName: extractRepoName(repoUrl),
 							repoUrl,
 							database,
+							namespace,
 							vus,
 							totalRecords,
 							maxPoolSize,
@@ -123,6 +126,7 @@ export async function POST(req: Request) {
 					repoName: run.repoName,
 					repoUrl: run.repoUrl,
 					database: validDatabase(run.database),
+					namespace,
 					types,
 					vus,
 					totalRecords,
