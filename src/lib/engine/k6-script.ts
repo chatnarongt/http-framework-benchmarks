@@ -27,7 +27,8 @@ export function generateK6Script(
       duration: '${opts?.durationSeconds}s',`
 		: `      executor: 'shared-iterations',
       vus: ${vus},
-      iterations: ${iterations},`;
+      iterations: ${iterations},
+      maxDuration: '45m',`;
 
 	const script = `
 import http from 'k6/http';
@@ -38,7 +39,6 @@ export const options = {
   scenarios: {
     benchmark: {
 ${scenario}
-      maxDuration: '45m',
     },
   },
 };

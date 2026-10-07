@@ -150,10 +150,12 @@ function testK6Script() {
 	assert(warmup.script.includes("executor: 'constant-vus'"));
 	assert(warmup.script.includes("duration: '30s'"));
 	assert(warmup.script.includes("vus: 50"));
+	assert(!warmup.script.includes("maxDuration"), "warmup must not have maxDuration");
 	assert(
 		single.script.includes("executor: 'shared-iterations'"),
 		"measured runs keep iteration budget",
 	);
+	assert(single.script.includes("maxDuration: '45m'"));
 	console.log("k6 script generator tests passed.");
 }
 
