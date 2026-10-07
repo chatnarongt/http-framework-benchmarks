@@ -10,14 +10,14 @@
  *   PENDING    dashed outline              queued, not started
  */
 export const STATUS_BADGE: Record<string, string> = {
-  COMPLETED: "bg-white text-black border-white",
-  FAILED: "bg-black text-white border-white",
-  STOPPED: "bg-transparent text-slate-400 border-slate-600",
-  RUNNING: "bg-white/15 text-white border-white animate-pulse",
-  PENDING: "bg-transparent text-slate-500 border-slate-700 border-dashed",
+	COMPLETED: "bg-white text-black border-white",
+	FAILED: "bg-black text-white border-white",
+	STOPPED: "bg-transparent text-slate-400 border-slate-600",
+	RUNNING: "bg-white/15 text-white border-white animate-pulse",
+	PENDING: "bg-transparent text-slate-500 border-slate-700 border-dashed",
 };
 
 /** Tone only — callers add their own padding/shape chrome. */
 export function statusTone(status: string): string {
-  return STATUS_BADGE[status] ?? STATUS_BADGE.PENDING;
+	return STATUS_BADGE[status] ?? STATUS_BADGE.PENDING;
 }

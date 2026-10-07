@@ -1,0 +1,39 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"formatter": {
+		"lineWidth": 100
+	},
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		}
+	},
+	"linter": {
+		"rules": {
+			"preset": "recommended",
+			"suspicious": {
+				"noExplicitAny": "off"
+			},
+			"nursery": {
+				"useSortedClasses": {
+					"level": "warn",
+					"options": {
+						"functions": ["cn"]
+					}
+				}
+			}
+		}
+	},
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	}
+}

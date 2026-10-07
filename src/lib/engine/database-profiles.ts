@@ -1,30 +1,30 @@
-import { DatabaseType } from "./types";
-import { RunContext } from "./run-context";
+import type { RunContext } from "./run-context";
+import type { DatabaseType } from "./types";
 
 export interface DatabaseManifestOptions {
-  totalRecords: number;
-  seedData: boolean;
+	totalRecords: number;
+	seedData: boolean;
 }
 
 export interface AppManifestOptions {
-  maxPoolSize: number;
+	maxPoolSize: number;
 }
 
 export interface DatabaseProfile {
-  id: DatabaseType;
-  label: string;
-  version: string;
-  description: string;
-  image: string;
-  port: number;
-  user: string;
-  password: string;
-  generateManifest(ctx: RunContext, options: DatabaseManifestOptions): string;
-  generateAppManifest(ctx: RunContext, options: AppManifestOptions): string;
+	id: DatabaseType;
+	label: string;
+	version: string;
+	description: string;
+	image: string;
+	port: number;
+	user: string;
+	password: string;
+	generateManifest(ctx: RunContext, options: DatabaseManifestOptions): string;
+	generateAppManifest(ctx: RunContext, options: AppManifestOptions): string;
 }
 
 function resourceBlock(cpuLimit: string, memLimit: string): string {
-  return `        resources:
+	return `        resources:
           requests:
             cpu: "${cpuLimit}"
             memory: "${memLimit}"
@@ -34,17 +34,17 @@ function resourceBlock(cpuLimit: string, memLimit: string): string {
 }
 
 function generatePostgresManifest(
-  ctx: RunContext,
-  { totalRecords, seedData }: DatabaseManifestOptions
+	ctx: RunContext,
+	{ totalRecords, seedData }: DatabaseManifestOptions,
 ): string {
-  const { deploymentName, serviceName, configMapName, label: appLabel } = ctx.db;
-  const { image, port, user, password } = postgresFacts;
+	const { deploymentName, serviceName, configMapName, label: appLabel } = ctx.db;
+	const { image, port, user, password } = postgresFacts;
 
-  const seedSql = seedData
-    ? `\n    INSERT INTO world (random_number)\n    SELECT FLOOR(RANDOM() * 1000001)::INT\n    FROM generate_series(1, ${totalRecords})\n    WHERE NOT EXISTS (SELECT 1 FROM world);`
-    : "";
+	const seedSql = seedData
+		? `\n    INSERT INTO world (random_number)\n    SELECT FLOOR(RANDOM() * 1000001)::INT\n    FROM generate_series(1, ${totalRecords})\n    WHERE NOT EXISTS (SELECT 1 FROM world);`
+		: "";
 
-  return `
+	return `
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -122,17 +122,17 @@ spec:
 }
 
 function generateMssqlManifest(
-  ctx: RunContext,
-  { totalRecords, seedData }: DatabaseManifestOptions
+	ctx: RunContext,
+	{ totalRecords, seedData }: DatabaseManifestOptions,
 ): string {
-  const { deploymentName, serviceName, configMapName, label: appLabel } = ctx.db;
-  const { image, port, user, password } = mssqlFacts;
+	const { deploymentName, serviceName, configMapName, label: appLabel } = ctx.db;
+	const { image, port, password } = mssqlFacts;
 
-  const seedSql = seedData
-    ? `\n    INSERT INTO world (random_number)\n    SELECT TOP (${totalRecords}) ABS(CHECKSUM(NEWID())) % 1000001\n    FROM sys.all_objects a\n    CROSS JOIN sys.all_objects b\n    CROSS JOIN sys.all_objects c;`
-    : "";
+	const seedSql = seedData
+		? `\n    INSERT INTO world (random_number)\n    SELECT TOP (${totalRecords}) ABS(CHECKSUM(NEWID())) % 1000001\n    FROM sys.all_objects a\n    CROSS JOIN sys.all_objects b\n    CROSS JOIN sys.all_objects c;`
+		: "";
 
-  return `
+	return `
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -233,14 +233,14 @@ spec:
 }
 
 function generateMongodbManifest(
-  ctx: RunContext,
-  { totalRecords, seedData }: DatabaseManifestOptions
+	ctx: RunContext,
+	{ totalRecords, seedData }: DatabaseManifestOptions,
 ): string {
-  const { deploymentName, serviceName, configMapName, label: appLabel } = ctx.db;
-  const { image, port, user, password } = mongodbFacts;
+	const { deploymentName, serviceName, configMapName, label: appLabel } = ctx.db;
+	const { image, port, user, password } = mongodbFacts;
 
-  const seedJs = seedData
-    ? `
+	const seedJs = seedData
+		? `
     if (world.countDocuments() === 0) {
       for (let id = 1; id <= ${totalRecords}; id += 1000) {
         const count = Math.min(1000, ${totalRecords} - id + 1);
@@ -258,14 +258,14 @@ function generateMongodbManifest(
       { $max: { seq: highest ? highest.id : 0 } },
       { upsert: true }
     );`
-    : `
+		: `
     database.getCollection('counters').updateOne(
       { _id: 'world' },
       { $set: { seq: 0 } },
       { upsert: true }
     );`;
 
-  return `
+	return `
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -341,62 +341,72 @@ spec:
 `;
 }
 
-const postgresFacts = { image: "postgres:18-alpine", port: 5432, user: "root", password: "benchmark" };
-const mssqlFacts = { image: "mcr.microsoft.com/mssql/server:2022-latest", port: 1433, user: "sa", password: "Benchmark123!" };
+const postgresFacts = {
+	image: "postgres:18-alpine",
+	port: 5432,
+	user: "root",
+	password: "benchmark",
+};
+const mssqlFacts = {
+	image: "mcr.microsoft.com/mssql/server:2022-latest",
+	port: 1433,
+	user: "sa",
+	password: "Benchmark123!",
+};
 const mongodbFacts = { image: "mongo:8", port: 27017, user: "root", password: "benchmark" };
 
 export const databaseProfiles: Record<DatabaseType, DatabaseProfile> = {
-  postgres: {
-    id: "postgres",
-    label: "PostgreSQL",
-    version: "18",
-    description: "v18 Alpine",
-    ...postgresFacts,
-    generateManifest: generatePostgresManifest,
-    generateAppManifest,
-  },
-  mssql: {
-    id: "mssql",
-    label: "Microsoft SQL Server",
-    version: "2022",
-    description: "2022 Latest",
-    ...mssqlFacts,
-    generateManifest: generateMssqlManifest,
-    generateAppManifest,
-  },
-  mongodb: {
-    id: "mongodb",
-    label: "MongoDB",
-    version: "8",
-    description: "v8 Community",
-    ...mongodbFacts,
-    generateManifest: generateMongodbManifest,
-    generateAppManifest,
-  },
+	postgres: {
+		id: "postgres",
+		label: "PostgreSQL",
+		version: "18",
+		description: "v18 Alpine",
+		...postgresFacts,
+		generateManifest: generatePostgresManifest,
+		generateAppManifest,
+	},
+	mssql: {
+		id: "mssql",
+		label: "Microsoft SQL Server",
+		version: "2022",
+		description: "2022 Latest",
+		...mssqlFacts,
+		generateManifest: generateMssqlManifest,
+		generateAppManifest,
+	},
+	mongodb: {
+		id: "mongodb",
+		label: "MongoDB",
+		version: "8",
+		description: "v8 Community",
+		...mongodbFacts,
+		generateManifest: generateMongodbManifest,
+		generateAppManifest,
+	},
 };
 
 export const DATABASE_ENGINES: DatabaseType[] = Object.keys(databaseProfiles) as DatabaseType[];
 
 export function getDatabaseProfile(id: DatabaseType): DatabaseProfile {
-  const profile = databaseProfiles[id];
-  if (!profile) {
-    throw new Error(`Unsupported database engine: ${id}`);
-  }
-  return profile;
+	const profile = databaseProfiles[id];
+	if (!profile) {
+		throw new Error(`Unsupported database engine: ${id}`);
+	}
+	return profile;
 }
 
 function generateAppManifest(ctx: RunContext, { maxPoolSize }: AppManifestOptions): string {
-  const { imageTag, database } = ctx;
-  const profile = getDatabaseProfile(database);
-  const { deploymentName, serviceName: appServiceName } = ctx.app;
-  const { configMapName, serviceName: dbServiceName } = {
-    configMapName: ctx.app.envConfigMapName,
-    serviceName: ctx.db.serviceName,
-  };
-  const appLabel = ctx.app.label;
-  const { port: dbPort, user: dbUser, password: dbPassword } = profile;
+	const { imageTag, database } = ctx;
+	const profile = getDatabaseProfile(database);
+	const { deploymentName, serviceName: appServiceName } = ctx.app;
+	const { configMapName, serviceName: dbServiceName } = {
+		configMapName: ctx.app.envConfigMapName,
+		serviceName: ctx.db.serviceName,
+	};
+	const appLabel = ctx.app.label;
+	const { port: dbPort, user: dbUser, password: dbPassword } = profile;
 
-  const envContent = `PORT=3000
+	const envContent = `PORT=3000
 DATABASE=${database}
 DATABASE_HOST=${dbServiceName}
 DATABASE_PORT=${dbPort}
@@ -407,7 +417,7 @@ DATABASE_MIN_POOL_SIZE=1
 DATABASE_MAX_POOL_SIZE=${maxPoolSize}
 `;
 
-  return `
+	return `
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -415,7 +425,10 @@ metadata:
   name: ${configMapName}
 data:
   .env: |
-${envContent.split("\n").map((l) => "    " + l).join("\n")}
+${envContent
+	.split("\n")
+	.map((l) => `    ${l}`)
+	.join("\n")}
 ---
 apiVersion: apps/v1
 kind: Deployment

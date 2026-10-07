@@ -4,7 +4,7 @@ Bun + Next.js 16 app that benchmarks third-party HTTP framework repos on Kuberne
 
 ## Commands
 - Run everything from the repo root. The SQLite URL `file:./prisma/benchmark.db` in `src/lib/prisma.ts` and `prisma.config.ts` resolves against the working directory, not the schema file.
-- `bun run typecheck`, then `bun run test`, then `bun run build`. There is no lint or formatter config.
+- `bun run lint`, then `bun run typecheck`, then `bun run test`, then `bun run build`. Biome is the linter/formatter (`biome.json`, tabs, line width 100); `bun run lint:fix` applies fixes.
 - `test`, `build`, and `dev` all run `prisma generate` first.
 - To run one suite: `bun test/<name>.test.ts`. Suites are plain `node:assert` scripts, not `bun test` specs. Each new suite has to be added to the `suites` list in `test/run-self-checks.ts`.
 - `test/self-check.ts` writes to the real `prisma/benchmark.db`. The other suites don't touch the DB.

@@ -1,5 +1,8 @@
 {
-    "cSpell.words": [
-        "libsql"
-    ]
+	"cSpell.words": ["libsql"],
+	"editor.defaultFormatter": "biomejs.biome",
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.fixAll.biome": "explicit"
+	}
 }
