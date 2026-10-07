@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { BenchmarkConfig, CollectedMetrics, TestType } from "./types";
+import { BenchmarkConfig, CollectedMetrics, DEFAULT_BENCHMARK_CONFIG, TestType } from "./types";
 import { createRunContext, RunContext } from "./run-context";
 import { DatabaseProfile, getDatabaseProfile } from "./database-profiles";
 import { Cluster, KubectlCluster } from "./cluster";
@@ -197,6 +197,8 @@ async function phaseRunSingleTest(
   const typeRecords = config.typeWorkloads?.[testType]?.totalRecords ?? config.totalRecords;
   const testNeedsDb = testType !== "plaintext" && testType !== "json";
   const seedData = testType !== "create-one" && testType !== "create-many";
+  const warmupSeconds = config.warmupSeconds ?? DEFAULT_BENCHMARK_CONFIG.warmupSeconds;
+  const cooldownSeconds = config.cooldownSeconds ?? DEFAULT_BENCHMARK_CONFIG.cooldownSeconds;
 
   await store.appendLog(`\n======================================================\n`);
   await store.appendLog(
@@ -209,8 +211,18 @@ async function phaseRunSingleTest(
     await phaseRecreateDatabase(s, { testType, typeRecords, seedData });
   }
 
+  if (warmupSeconds > 0) {
+    gate();
+    await phaseWarmup(s, testType, typeVus, warmupSeconds);
+  }
+
+  if (cooldownSeconds > 0) {
+    await store.appendLog(`[Benchmark] Cooldown for '${testType}' (${cooldownSeconds}s)...\n`);
+    await s.sleep(cooldownSeconds * 1000);
+  }
+
   await store.appendLog(`[Metrics] Sampling idle metrics for ${testType}...\n`);
-  await s.sleep(3000);
+  await s.sleep(cooldownSeconds > 0 ? 0 : 3000);
 
   const idle = await sampleIdleMetrics(s, testNeedsDb);
   await store.appendLog(
@@ -338,6 +350,78 @@ async function sampleIdleMetrics(s: PhaseSession, testNeedsDb: boolean): Promise
   return { app, db, connections };
 }
 
+function k6PodManifest(podName: string, configMapName: string): string {
+  return JSON.stringify({
+    apiVersion: "v1",
+    kind: "Pod",
+    metadata: { name: podName, labels: { app: podName } },
+    spec: {
+      restartPolicy: "Never",
+      containers: [
+        {
+          name: "k6",
+          image: "grafana/k6:latest",
+          args: ["run", "/scripts/script.js"],
+          volumeMounts: [{ name: "k6-script-vol", mountPath: "/scripts", readOnly: true }],
+        },
+      ],
+      volumes: [{ name: "k6-script-vol", configMap: { name: configMapName } }],
+    },
+  });
+}
+
+/**
+ * Short, unmeasured k6 run that warms the app before the measured run.
+ * Results are discarded; a failed warmup pod only logs a warning.
+ */
+async function phaseWarmup(
+  s: PhaseSession,
+  testType: TestType,
+  typeVus: number,
+  warmupSeconds: number
+): Promise<void> {
+  const { cluster, store, ctx, onLog, sleep, gate } = s;
+  // ponytail: delete-* warms read-one instead — its destructive ids belong to the
+  // measured run. Upgrade: seed a spare id band and re-seed between warmup and measure.
+  const warmType: TestType = testType.startsWith("delete") ? "read-one" : testType;
+  const { podName, configMapName } = ctx.k6(`${testType}-warmup`);
+  const scriptPath = `/tmp/${configMapName}.js`;
+  const { script } = generateK6Script(`http://${ctx.app.serviceName}`, warmType, typeVus, 0, {
+    durationSeconds: warmupSeconds,
+  });
+
+  await store.appendLog(
+    `[Benchmark] Warmup for '${testType}' via '${warmType}' (${warmupSeconds}s at ${typeVus} VUs, discarded)...\n`
+  );
+
+  try {
+    fs.writeFileSync(scriptPath, script);
+    await cluster.createConfigMapFromFile(configMapName, "script.js", scriptPath);
+    await cluster.deleteResource({ kind: "pod", name: podName });
+    await cluster.applyManifest(k6PodManifest(podName, configMapName), onLog);
+
+    const deadline = Date.now() + (warmupSeconds + K6_DEADLINE_MIN * 60) * 1000;
+    while (Date.now() < deadline) {
+      gate();
+      const phase = await cluster.podPhase(podName);
+      if (phase === "Succeeded" || phase === "Failed") {
+        if (phase === "Failed") {
+          await store.appendLog(`[Benchmark] Warmup pod for '${testType}' failed; continuing anyway.\n`);
+        }
+        return;
+      }
+      await sleep(1000);
+    }
+    throw new Error(`warmup pod ${podName} did not finish within ${warmupSeconds}s + ${K6_DEADLINE_MIN}m`);
+  } finally {
+    try {
+      fs.unlinkSync(scriptPath);
+    } catch {}
+    await cluster.deleteResource({ kind: "pod", name: podName }).catch(() => {});
+    await cluster.deleteResource({ kind: "configmap", name: configMapName }).catch(() => {});
+  }
+}
+
 interface PhaseRunK6Args {
   testType: TestType;
   typeVus: number;
@@ -416,26 +500,8 @@ async function phaseRunK6(s: PhaseSession, a: PhaseRunK6Args): Promise<K6Outcome
     fs.writeFileSync(scriptPath, script);
     await cluster.createConfigMapFromFile(configMapName, "script.js", scriptPath);
 
-    const podManifest = JSON.stringify({
-      apiVersion: "v1",
-      kind: "Pod",
-      metadata: { name: podName, labels: { app: podName } },
-      spec: {
-        restartPolicy: "Never",
-        containers: [
-          {
-            name: "k6",
-            image: "grafana/k6:latest",
-            args: ["run", "/scripts/script.js"],
-            volumeMounts: [{ name: "k6-script-vol", mountPath: "/scripts", readOnly: true }],
-          },
-        ],
-        volumes: [{ name: "k6-script-vol", configMap: { name: configMapName } }],
-      },
-    });
-
     await cluster.deleteResource({ kind: "pod", name: podName });
-    await cluster.applyManifest(podManifest, onLog);
+    await cluster.applyManifest(k6PodManifest(podName, configMapName), onLog);
 
     const appPods = await cluster.listPods(ctx.app.label);
     appPodName = appPods.find((p) => p.phase === "Running" && !p.deletionTimestamp)?.name ?? "";

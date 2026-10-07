@@ -1,10 +1,16 @@
 import { TestType } from "./types";
 
+export interface K6ScriptOptions {
+  /** When set, emit a time-boxed warmup scenario (constant-vus) instead of the measured iteration budget. */
+  durationSeconds?: number;
+}
+
 export function generateK6Script(
   targetUrl: string,
   testType: TestType,
   vus: number,
-  totalRecords: number
+  totalRecords: number,
+  opts?: K6ScriptOptions
 ): { script: string; iterations: number } {
   const isMany =
     testType === "read-many" ||
@@ -12,7 +18,16 @@ export function generateK6Script(
     testType === "update-many" ||
     testType === "delete-many";
 
-  const iterations = isMany ? Math.ceil(totalRecords / 20) : totalRecords;
+  const warmup = opts?.durationSeconds != null && opts.durationSeconds > 0;
+  const iterations = warmup ? 0 : isMany ? Math.ceil(totalRecords / 20) : totalRecords;
+
+  const scenario = warmup
+    ? `      executor: 'constant-vus',
+      vus: ${vus},
+      duration: '${opts!.durationSeconds}s',`
+    : `      executor: 'shared-iterations',
+      vus: ${vus},
+      iterations: ${iterations},`;
 
   const script = `
 import http from 'k6/http';
@@ -22,9 +37,7 @@ import { check } from 'k6';
 export const options = {
   scenarios: {
     benchmark: {
-      executor: 'shared-iterations',
-      vus: ${vus},
-      iterations: ${iterations},
+${scenario}
       maxDuration: '45m',
     },
   },

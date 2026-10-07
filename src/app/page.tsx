@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ALL_TEST_TYPES, DatabaseType, TestType, extractRepoName, DEFAULT_BENCHMARK_CONFIG } from "@/lib/engine/types";
 import { DATABASE_ENGINES, databaseProfiles } from "@/lib/engine/database-profiles";
-import { validDatabase } from "@/lib/engine/input-validation";
+import { validDatabase, validRepoUrl } from "@/lib/engine/input-validation";
+import { KnownRepo, RepoCombobox } from "@/components/RepoCombobox";
 import { Play, CheckSquare, Square, Settings, Layers, Zap, RotateCcw, Plus, X, ChevronDown } from "lucide-react";
 
 const STORAGE_KEY = "benchhub_config";
@@ -12,20 +13,25 @@ const STORAGE_KEY = "benchhub_config";
 interface RepoEntry {
   url: string;
   database: DatabaseType;
+  enabled: boolean;
 }
 
 const defaultRepo = (): RepoEntry => ({
   url: DEFAULT_BENCHMARK_CONFIG.repoUrl,
   database: DEFAULT_BENCHMARK_CONFIG.database,
+  enabled: true,
 });
 
 export default function SetupPage() {
   const router = useRouter();
 
   const [repos, setRepos] = useState<RepoEntry[]>([defaultRepo()]);
+  const [knownRepos, setKnownRepos] = useState<KnownRepo[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<TestType[]>([...ALL_TEST_TYPES]);
   const [vus, setVus] = useState(DEFAULT_BENCHMARK_CONFIG.vus);
   const [totalRecords, setTotalRecords] = useState(DEFAULT_BENCHMARK_CONFIG.totalRecords);
+  const [warmupSeconds, setWarmupSeconds] = useState(DEFAULT_BENCHMARK_CONFIG.warmupSeconds);
+  const [cooldownSeconds, setCooldownSeconds] = useState(DEFAULT_BENCHMARK_CONFIG.cooldownSeconds);
   const [maxPoolSize, setMaxPoolSize] = useState(DEFAULT_BENCHMARK_CONFIG.maxPoolSize);
   const [runCount, setRunCount] = useState(1);
   const [typeWorkloads, setTypeWorkloads] = useState<Partial<Record<TestType, { vus: number; totalRecords: number }>>>({});
@@ -42,6 +48,11 @@ export default function SetupPage() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Saved-repo registry for the combobox
+  useEffect(() => {
+    loadKnownRepos();
+  }, []);
+
   // Load configuration from localStorage on mount
   useEffect(() => {
     try {
@@ -52,7 +63,11 @@ export default function SetupPage() {
           setRepos(
             parsed.repos.map((r: unknown) => {
               const e = (r && typeof r === "object" ? r : {}) as Record<string, unknown>;
-              return { url: String(e.url ?? ""), database: validDatabase(e.database) };
+              return {
+                url: String(e.url ?? ""),
+                database: validDatabase(e.database),
+                enabled: e.enabled !== false,
+              };
             })
           );
         } else if (Array.isArray(parsed.repoUrls) && parsed.repoUrls.length > 0) {
@@ -60,6 +75,7 @@ export default function SetupPage() {
             parsed.repoUrls.map((u: unknown) => ({
               url: String(u),
               database: validDatabase(parsed.database),
+              enabled: true,
             }))
           );
         }
@@ -68,6 +84,8 @@ export default function SetupPage() {
         }
         if (parsed.vus !== undefined) setVus(Number(parsed.vus));
         if (parsed.totalRecords !== undefined) setTotalRecords(Number(parsed.totalRecords));
+        if (parsed.warmupSeconds !== undefined) setWarmupSeconds(Number(parsed.warmupSeconds));
+        if (parsed.cooldownSeconds !== undefined) setCooldownSeconds(Number(parsed.cooldownSeconds));
         if (parsed.maxPoolSize !== undefined) setMaxPoolSize(Number(parsed.maxPoolSize));
         if (parsed.runCount !== undefined) setRunCount(Number(parsed.runCount));
         if (parsed.typeWorkloads && typeof parsed.typeWorkloads === "object") {
@@ -94,6 +112,8 @@ export default function SetupPage() {
         selectedTypes,
         vus,
         totalRecords,
+        warmupSeconds,
+        cooldownSeconds,
         typeWorkloads,
         showTypeOverrides,
         maxPoolSize,
@@ -111,6 +131,8 @@ export default function SetupPage() {
     selectedTypes,
     vus,
     totalRecords,
+    warmupSeconds,
+    cooldownSeconds,
     typeWorkloads,
     showTypeOverrides,
     maxPoolSize,
@@ -143,21 +165,48 @@ export default function SetupPage() {
     setTypeWorkloads({});
   };
 
+  const loadKnownRepos = async () => {
+    try {
+      const res = await fetch("/api/repos");
+      if (res.ok) setKnownRepos(await res.json());
+    } catch { }
+  };
+
+  const saveRepo = async (url: string, database: DatabaseType) => {
+    try {
+      await fetch("/api/repos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ repoUrl: url, database }),
+      });
+      await loadKnownRepos();
+    } catch { }
+  };
+
+  const deleteKnownRepo = async (id: string) => {
+    try {
+      await fetch(`/api/repos/${id}`, { method: "DELETE" });
+      await loadKnownRepos();
+    } catch { }
+  };
+
   const updateRepo = (index: number, patch: Partial<RepoEntry>) =>
     setRepos((prev) => prev.map((r, i) => (i === index ? { ...r, ...patch } : r)));
 
-  const addRepo = () => setRepos((prev) => [...prev, { url: "", database: DEFAULT_BENCHMARK_CONFIG.database }]);
+  const addRepo = () => setRepos((prev) => [...prev, { url: "", database: DEFAULT_BENCHMARK_CONFIG.database, enabled: true }]);
 
   const removeRepo = (index: number) =>
     setRepos((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
 
-  const activeRepos = repos.filter((r) => r.url.trim());
+  const activeRepos = repos.filter((r) => r.enabled && r.url.trim());
 
   const resetDefaults = () => {
     setRepos([defaultRepo()]);
     setSelectedTypes([...ALL_TEST_TYPES]);
     setVus(DEFAULT_BENCHMARK_CONFIG.vus);
     setTotalRecords(DEFAULT_BENCHMARK_CONFIG.totalRecords);
+    setWarmupSeconds(DEFAULT_BENCHMARK_CONFIG.warmupSeconds);
+    setCooldownSeconds(DEFAULT_BENCHMARK_CONFIG.cooldownSeconds);
     setMaxPoolSize(DEFAULT_BENCHMARK_CONFIG.maxPoolSize);
     setRunCount(1);
     setTypeWorkloads({});
@@ -185,7 +234,7 @@ export default function SetupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (activeRepos.length === 0) {
-      setError("Please add at least one target repository.");
+      setError("Please add and enable at least one target repository.");
       return;
     }
     if (selectedTypes.length === 0) {
@@ -204,6 +253,8 @@ export default function SetupPage() {
           types: selectedTypes,
           vus,
           totalRecords,
+          warmupSeconds,
+          cooldownSeconds,
           typeWorkloads,
           maxPoolSize,
           runCount,
@@ -251,7 +302,7 @@ export default function SetupPage() {
             <label className="block text-sm font-semibold text-slate-200">
               Target Repositories (Git URLs or Local Paths)
               <span className="ml-2 text-xs font-normal text-slate-500">
-                {activeRepos.length} selected — {runCount} run{runCount === 1 ? "" : "s"} each
+                {activeRepos.length} of {repos.length} enabled — {runCount} run{runCount === 1 ? "" : "s"} each
               </span>
             </label>
             <button
@@ -265,7 +316,10 @@ export default function SetupPage() {
 
           <div className="space-y-2">
             {repos.map((repo, index) => (
-              <div key={index} className="flex flex-col sm:flex-row sm:items-end gap-2">
+              <div
+                key={index}
+                className={`flex flex-col sm:flex-row sm:items-end gap-2 ${repo.enabled ? "" : "opacity-60"}`}
+              >
                 <div className="flex-1 space-y-1">
                   <div className="text-xs text-slate-500 truncate">
                     Name:{" "}
@@ -273,13 +327,31 @@ export default function SetupPage() {
                       {repo.url.trim() ? extractRepoName(repo.url) : "—"}
                     </span>
                   </div>
-                  <input
-                    type="text"
-                    value={repo.url}
-                    onChange={(e) => updateRepo(index, { url: e.target.value })}
-                    className="w-full h-9 bg-slate-950 border border-slate-700 rounded-lg px-3 text-slate-100 text-sm focus:outline-none focus:border-sky-500 font-mono"
-                    placeholder="https://github.com/..."
-                  />
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => updateRepo(index, { enabled: !repo.enabled })}
+                      className={`h-9 px-2 rounded-lg border transition-colors shrink-0 ${
+                        repo.enabled
+                          ? "border-slate-700 text-sky-400 hover:bg-slate-800/30"
+                          : "border-slate-800 text-slate-600 hover:bg-slate-800/30"
+                      }`}
+                      title={repo.enabled ? "Included in run — click to exclude" : "Excluded from run — click to include"}
+                    >
+                      {repo.enabled ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
+                    </button>
+                    <RepoCombobox
+                      value={repo.url}
+                      suggestions={knownRepos}
+                      onChange={(url) => updateRepo(index, { url })}
+                      onCommit={(url) => saveRepo(url, repo.database)}
+                      onSelect={(url, database) => {
+                        updateRepo(index, { url, database: validDatabase(database) });
+                        saveRepo(url, validDatabase(database));
+                      }}
+                      onDelete={deleteKnownRepo}
+                    />
+                  </div>
                 </div>
                 <div className="relative sm:w-40">
                   <select
@@ -405,7 +477,7 @@ export default function SetupPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-2">
                 Default Virtual Users (VUs)
@@ -465,6 +537,36 @@ export default function SetupPage() {
               <p className="text-xs text-slate-500 mt-1">
                 {activeRepos.length * runCount} queued sequentially
               </p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-2">
+                Warmup Duration (seconds)
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="3600"
+                value={warmupSeconds}
+                onChange={(e) => setWarmupSeconds(Number(e.target.value))}
+                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 font-mono focus:outline-none focus:border-sky-500"
+              />
+              <p className="text-xs text-slate-500 mt-1">Unmeasured k6 run per test, 0 = off</p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-2">
+                Cooldown Duration (seconds)
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="3600"
+                value={cooldownSeconds}
+                onChange={(e) => setCooldownSeconds(Number(e.target.value))}
+                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 font-mono focus:outline-none focus:border-sky-500"
+              />
+              <p className="text-xs text-slate-500 mt-1">Settle before idle baseline, 0 = off</p>
             </div>
           </div>
 

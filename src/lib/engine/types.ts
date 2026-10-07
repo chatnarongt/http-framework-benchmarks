@@ -44,6 +44,8 @@ export interface BenchmarkConfig {
   vus: number;
   totalRecords: number;
   typeWorkloads?: Partial<Record<TestType, TypeWorkloadConfig>>;
+  warmupSeconds?: number;
+  cooldownSeconds?: number;
   maxPoolSize: number;
   appCpuLimit: string;
   appMemLimit: string;
@@ -63,12 +65,14 @@ export const DEFAULT_BENCHMARK_CONFIG: Readonly<
     | "appMemLimit"
     | "dbCpuLimit"
     | "dbMemLimit"
-  >
+  > & { warmupSeconds: number; cooldownSeconds: number }
 > = Object.freeze({
   repoUrl: "https://github.com/chatnarongt/nestjs-platform-express-node.git",
   database: "postgres",
   vus: 100,
   totalRecords: 100000,
+  warmupSeconds: 30,
+  cooldownSeconds: 10,
   maxPoolSize: 100,
   appCpuLimit: "1",
   appMemLimit: "512Mi",

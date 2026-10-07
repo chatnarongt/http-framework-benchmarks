@@ -7,6 +7,14 @@ generator client {
   output   = "../src/generated/prisma"
 }
 
+model TargetRepo {
+  id         String   @id @default(cuid())
+  repoUrl    String   @unique
+  database   String   @default("postgres")
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+}
+
 model BenchmarkRun {
   id              String            @id @default(cuid())
   createdAt       DateTime          @default(now())
@@ -17,6 +25,8 @@ model BenchmarkRun {
   database        String
   vus             Int               @default(100)
   totalRecords    Int               @default(100000)
+  warmupSeconds   Int               @default(30)
+  cooldownSeconds Int               @default(10)
   maxPoolSize     Int               @default(100)
   appCpuLimit     String            @default("1")
   appMemLimit     String            @default("512Mi")

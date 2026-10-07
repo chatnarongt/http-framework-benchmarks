@@ -41,6 +41,8 @@ export async function POST(req: Request) {
     const vus = boundedInt(body.vus, 1, 1000, DEFAULT_BENCHMARK_CONFIG.vus);
     const totalRecords = boundedInt(body.totalRecords, 1, 10_000_000, DEFAULT_BENCHMARK_CONFIG.totalRecords);
     const maxPoolSize = boundedInt(body.maxPoolSize, 1, 10_000, DEFAULT_BENCHMARK_CONFIG.maxPoolSize);
+    const warmupSeconds = boundedInt(body.warmupSeconds, 0, 3600, DEFAULT_BENCHMARK_CONFIG.warmupSeconds);
+    const cooldownSeconds = boundedInt(body.cooldownSeconds, 0, 3600, DEFAULT_BENCHMARK_CONFIG.cooldownSeconds);
 
     const appCpuLimit = validLimit(body.appCpuLimit, DEFAULT_BENCHMARK_CONFIG.appCpuLimit);
     const appMemLimit = validLimit(body.appMemLimit, DEFAULT_BENCHMARK_CONFIG.appMemLimit);
@@ -58,6 +60,17 @@ export async function POST(req: Request) {
       );
     }
 
+    // Registry upserts first: the combobox sorts suggestions by real recency.
+    await Promise.all(
+      repos.map(({ repoUrl, database }) =>
+        prisma.targetRepo.upsert({
+          where: { repoUrl },
+          create: { repoUrl, database },
+          update: { database, lastUsedAt: new Date() },
+        })
+      )
+    );
+
     // One row per repo per repeat, created atomically: a partial batch must never be enqueued.
     const runs = await prisma.$transaction(
       repos.flatMap(({ repoUrl, database }) =>
@@ -70,6 +83,8 @@ export async function POST(req: Request) {
               vus,
               totalRecords,
               maxPoolSize,
+              warmupSeconds,
+              cooldownSeconds,
               appCpuLimit,
               appMemLimit,
               dbCpuLimit,
@@ -93,6 +108,8 @@ export async function POST(req: Request) {
           totalRecords,
           typeWorkloads,
           maxPoolSize,
+          warmupSeconds,
+          cooldownSeconds,
           appCpuLimit,
           appMemLimit,
           dbCpuLimit,

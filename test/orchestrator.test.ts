@@ -268,12 +268,76 @@ async function testQueueRealSeam() {
   console.log("queue seam tests passed.");
 }
 
+async function testWarmupAndCooldown() {
+  console.log("orchestrator: warmup + cooldown before measured run...");
+  const fake = new FakeCluster();
+  const sink = makeSink();
+  const results: CollectedResult[] = [];
+  const slept: number[] = [];
+  const deps = {
+    cluster: fake,
+    sink,
+    writeResult: async (data: any) => {
+      results.push(data);
+    },
+    sleep: async (ms: number) => {
+      slept.push(ms);
+    },
+  };
+  const suffix = RUN_ID.toLowerCase().replace(/[^a-z0-9]/g, "").slice(-8);
+  fake.stdLogs[`k6-${suffix}-read-one`] = k6SummaryLogs("x");
+
+  const config: BenchmarkConfig = {
+    ...makeConfig(["read-one"]),
+    warmupSeconds: 5,
+    cooldownSeconds: 2,
+  };
+  await executeBenchmark(RUN_ID, config, undefined, deps);
+
+  const warmupApplies = fake.appliedManifests.filter((m) => m.includes(`k6-${suffix}-read-one-warmup`));
+  assert.strictEqual(warmupApplies.length, 1, "warmup pod applied per test type");
+  assert.ok(
+    warmupApplies[0].includes(`k6-script-${suffix}-read-one-warmup`),
+    "warmup pod mounts its own script configmap"
+  );
+  assert.ok(slept.includes(2000), "cooldown sleep honors configured seconds");
+  assert.strictEqual(sink.rows.get(RUN_ID)?.status, "COMPLETED");
+  assert.strictEqual(results.length, 1, "warmup never writes a result row");
+  assert.strictEqual(fake.remainingResourceCount(), 0, "warmup resources cleaned up");
+  console.log("warmup/cooldown tests passed.");
+}
+
+async function testWarmupDisabled() {
+  console.log("orchestrator: warmupSeconds=0 skips warmup pod...");
+  const fake = new FakeCluster();
+  const sink = makeSink();
+  const { deps } = makeDeps(fake, sink);
+  const suffix = RUN_ID.toLowerCase().replace(/[^a-z0-9]/g, "").slice(-8);
+  fake.stdLogs[`k6-${suffix}-plaintext`] = k6SummaryLogs("x");
+
+  const config: BenchmarkConfig = {
+    ...makeConfig(["plaintext"]),
+    warmupSeconds: 0,
+    cooldownSeconds: 0,
+  };
+  await executeBenchmark(RUN_ID, config, undefined, deps);
+
+  assert.ok(
+    !fake.appliedManifests.some((m) => m.includes(`k6-${suffix}-plaintext-warmup`)),
+    "no warmup pod when disabled"
+  );
+  assert.strictEqual(sink.rows.get(RUN_ID)?.status, "COMPLETED");
+  console.log("warmup disabled tests passed.");
+}
+
 async function main() {
   await testFullRunLifecycle();
   await testFreshDatabasePerTestType();
   await testPlaintextSkipsDatabaseRecreate();
   await testAbortBeforeStart();
   await testFailureStatusAndTeardown();
+  await testWarmupAndCooldown();
+  await testWarmupDisabled();
   await testQueueRealSeam();
   console.log("All orchestrator/queue tests passed!");
 }

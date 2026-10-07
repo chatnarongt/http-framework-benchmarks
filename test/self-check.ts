@@ -98,6 +98,16 @@ async function testPrisma() {
   assert.strictEqual(fetched?.results.length, 1);
   assert.strictEqual(fetched?.results[0].requestPerSecond, 15420.5);
 
+  // suggestion registry: upsert is idempotent and delete forgets
+  const url = "https://github.com/x/registry-check.git";
+  await prisma.targetRepo.upsert({ where: { repoUrl: url }, create: { repoUrl: url, database: "mssql" }, update: { database: "mssql" } });
+  await prisma.targetRepo.upsert({ where: { repoUrl: url }, create: { repoUrl: url }, update: { database: "mongodb" } });
+  const saved = await prisma.targetRepo.findUnique({ where: { repoUrl: url } });
+  assert(saved, "target repo registered");
+  assert.strictEqual(await prisma.targetRepo.count({ where: { repoUrl: url } }), 1, "upsert never duplicates");
+  await prisma.targetRepo.deleteMany({ where: { repoUrl: url } });
+  assert.strictEqual(await prisma.targetRepo.count({ where: { repoUrl: url } }), 0, "delete forgets");
+
   // cleanup
   await prisma.benchmarkRun.delete({ where: { id: run.id } });
   console.log("Prisma tests passed.");
@@ -118,6 +128,13 @@ function testK6Script() {
 
   const deleteMany = generateK6Script("http://app", "delete-many", 100, 100000);
   assert.strictEqual(deleteMany.iterations, 5000);
+
+  const warmup = generateK6Script("http://app", "read-one", 50, 100000, { durationSeconds: 30 });
+  assert.strictEqual(warmup.iterations, 0);
+  assert(warmup.script.includes("executor: 'constant-vus'"));
+  assert(warmup.script.includes("duration: '30s'"));
+  assert(warmup.script.includes("vus: 50"));
+  assert(single.script.includes("executor: 'shared-iterations'"), "measured runs keep iteration budget");
   console.log("k6 script generator tests passed.");
 }
 
