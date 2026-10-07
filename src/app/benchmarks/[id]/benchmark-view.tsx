@@ -136,6 +136,34 @@ export default function BenchmarkView({ id }: { id: string }) {
 				</div>
 			</div>
 
+			{/* Terminal logs */}
+			<div className="flex flex-col overflow-hidden rounded-xl border border-slate-800 bg-slate-900">
+				<div className="flex items-center justify-between border-slate-800 border-b bg-slate-950 px-4 py-3">
+					<div className="flex items-center gap-2 text-slate-400 text-xs">
+						<Terminal className="h-4 w-4 text-slate-400" />
+						<span>Orchestrator Logs</span>
+					</div>
+					<button
+						type="button"
+						onClick={() => setAutoScroll(!autoScroll)}
+						className={cn(
+							"rounded border px-2.5 py-1 text-xs transition-colors",
+							autoScroll
+								? "border-sky-700 bg-sky-950 text-sky-400"
+								: "border-slate-800 bg-slate-900 text-slate-400",
+						)}
+					>
+						Auto-scroll {autoScroll ? "ON" : "OFF"}
+					</button>
+				</div>
+				<div
+					ref={terminalRef}
+					className="h-112.5 select-text overflow-y-auto whitespace-pre-wrap bg-black p-4 font-mono text-slate-300 text-xs leading-relaxed"
+				>
+					{logs || "Waiting for execution logs...\n"}
+				</div>
+			</div>
+
 			{/* Real-time Results Preview */}
 			{run?.results && run.results.length > 0 && (
 				<div className="space-y-4 rounded-xl border border-slate-800 bg-slate-900 p-6">
@@ -179,34 +207,6 @@ export default function BenchmarkView({ id }: { id: string }) {
 					</div>
 				</div>
 			)}
-
-			{/* Terminal logs */}
-			<div className="flex flex-col overflow-hidden rounded-xl border border-slate-800 bg-slate-900">
-				<div className="flex items-center justify-between border-slate-800 border-b bg-slate-950 px-4 py-3">
-					<div className="flex items-center gap-2 text-slate-400 text-xs">
-						<Terminal className="h-4 w-4 text-slate-400" />
-						<span>Orchestrator Logs</span>
-					</div>
-					<button
-						type="button"
-						onClick={() => setAutoScroll(!autoScroll)}
-						className={cn(
-							"rounded border px-2.5 py-1 text-xs transition-colors",
-							autoScroll
-								? "border-sky-700 bg-sky-950 text-sky-400"
-								: "border-slate-800 bg-slate-900 text-slate-400",
-						)}
-					>
-						Auto-scroll {autoScroll ? "ON" : "OFF"}
-					</button>
-				</div>
-				<div
-					ref={terminalRef}
-					className="h-[450px] select-text overflow-y-auto whitespace-pre-wrap bg-black p-4 font-mono text-slate-300 text-xs leading-relaxed"
-				>
-					{logs || "Waiting for execution logs...\n"}
-				</div>
-			</div>
 		</div>
 	);
 }
