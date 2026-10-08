@@ -55,11 +55,18 @@ export default function SummaryPage() {
 	const [visibleMetrics, setVisibleMetrics] = useState<MetricKey[]>(
 		METRIC_CONFIGS.map(({ key }) => key),
 	);
+	const [hiddenRuns, setHiddenRuns] = useState<string[]>([]);
 	const [filtersLoaded, setFiltersLoaded] = useState(false);
 
 	const toggleMetric = (key: MetricKey) => {
 		setVisibleMetrics((prev) =>
 			prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
+		);
+	};
+
+	const toggleRun = (name: string) => {
+		setHiddenRuns((prev) =>
+			prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name],
 		);
 	};
 
@@ -90,6 +97,9 @@ export default function SummaryPage() {
 				);
 				if (valid.length > 0) setVisibleMetrics(valid);
 			}
+			if (Array.isArray(saved.hiddenRuns)) {
+				setHiddenRuns(saved.hiddenRuns.filter((n: unknown): n is string => typeof n === "string"));
+			}
 		} catch {}
 		setFiltersLoaded(true);
 	}, []);
@@ -98,9 +108,9 @@ export default function SummaryPage() {
 		if (!filtersLoaded) return;
 		localStorage.setItem(
 			STORAGE_KEY,
-			JSON.stringify({ mode, testType, database, sortBy, metrics: visibleMetrics }),
+			JSON.stringify({ mode, testType, database, sortBy, metrics: visibleMetrics, hiddenRuns }),
 		);
-	}, [filtersLoaded, mode, testType, database, sortBy, visibleMetrics]);
+	}, [filtersLoaded, mode, testType, database, sortBy, visibleMetrics, hiddenRuns]);
 
 	const rows = data[mode];
 
@@ -112,6 +122,17 @@ export default function SummaryPage() {
 	const availableDatabases = useMemo<string[]>(
 		() => [...new Set(rows.map((r) => r.database))],
 		[rows],
+	);
+
+	const availableRuns = useMemo<string[]>(
+		() => [...new Set(rows.map((r) => r.framework))].sort((a, b) => a.localeCompare(b)),
+		[rows],
+	);
+
+	// ponytail: hidden-list over visible-list so new run names show by default with no merge logic.
+	const shownRows = useMemo(
+		() => rows.filter((r) => !hiddenRuns.includes(r.framework)),
+		[rows, hiddenRuns],
 	);
 
 	useEffect(() => {
@@ -127,7 +148,7 @@ export default function SummaryPage() {
 	}, [availableDatabases, database]);
 
 	const { frameworks, chartDataByMetric } = useMemo(() => {
-		const selected = rows.filter((r) => r.testType === testType && r.database === database);
+		const selected = shownRows.filter((r) => r.testType === testType && r.database === database);
 		const frameworks = [...new Set(selected.map((r) => r.framework))];
 		const chartDataByMetric = {} as Record<
 			MetricKey,
@@ -157,7 +178,7 @@ export default function SummaryPage() {
 			chartDataByMetric[key] = data;
 		}
 		return { frameworks, chartDataByMetric };
-	}, [rows, testType, database, sortBy]);
+	}, [shownRows, testType, database, sortBy]);
 
 	const isDbTest = testType !== "plaintext" && testType !== "json";
 	const shownMetrics = METRIC_CONFIGS.filter(
@@ -276,6 +297,32 @@ export default function SummaryPage() {
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
 					<span className="mr-1 font-bold text-[11px] text-slate-500 uppercase tracking-wider">
+						Runs
+					</span>
+					{availableRuns.map((name) => (
+						<button
+							type="button"
+							key={name}
+							onClick={() => toggleRun(name)}
+							className={cn(
+								"inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 font-mono font-semibold text-xs transition-colors",
+								!hiddenRuns.includes(name)
+									? "border-sky-500 bg-sky-500 text-slate-950"
+									: "border-slate-800 bg-slate-900 text-slate-300 hover:border-slate-600",
+							)}
+						>
+							<span
+								className={cn(
+									"h-2.5 w-2.5 rounded-sm border",
+									!hiddenRuns.includes(name) ? "border-slate-950 bg-slate-950" : "border-slate-500",
+								)}
+							/>
+							{name}
+						</button>
+					))}
+				</div>
+				<div className="flex flex-wrap items-center gap-2">
+					<span className="mr-1 font-bold text-[11px] text-slate-500 uppercase tracking-wider">
 						Metrics
 					</span>
 					{METRIC_CONFIGS.map(({ key, label }) => (
@@ -326,10 +373,23 @@ export default function SummaryPage() {
 
 			{frameworks.length === 0 ? (
 				<div className="rounded-xl border border-slate-800 bg-slate-900 p-12 text-center">
-					<div className="text-slate-400 text-sm">
-						No benchmarks for <span className="font-mono text-sky-400">{database}</span> with test
-						type <span className="font-mono text-sky-400">{testType}</span>.
-					</div>
+					{hiddenRuns.length > 0 ? (
+						<div className="space-y-4">
+							<div className="text-slate-400 text-sm">No runs selected.</div>
+							<button
+								type="button"
+								onClick={() => setHiddenRuns([])}
+								className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 font-mono font-semibold text-slate-300 text-xs transition-colors hover:border-slate-600"
+							>
+								Show All
+							</button>
+						</div>
+					) : (
+						<div className="text-slate-400 text-sm">
+							No benchmarks for <span className="font-mono text-sky-400">{database}</span> with test
+							type <span className="font-mono text-sky-400">{testType}</span>.
+						</div>
+					)}
 				</div>
 			) : shownMetrics.length === 0 ? (
 				<div className="rounded-xl border border-slate-800 bg-slate-900 p-12 text-center">
