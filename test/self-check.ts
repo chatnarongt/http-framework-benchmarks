@@ -138,7 +138,7 @@ function testK6Script() {
 
 	const many = generateK6Script("http://app", "read-many", 100, 100000);
 	assert.strictEqual(many.iterations, 5000);
-	assert(many.script.includes("limit=20&offset="));
+	assert(many.script.includes("limit=20&afterId="));
 
 	const createMany = generateK6Script("http://app", "create-many", 100, 100000);
 	assert.strictEqual(createMany.iterations, 5000);

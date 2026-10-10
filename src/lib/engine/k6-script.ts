@@ -59,8 +59,8 @@ export default function () {
     const id = iter + 1;
     res = http.get(TARGET_URL + '/bench/read-one?id=' + id);
   } else if (TEST_TYPE === 'read-many') {
-    const offset = iter * 20;
-    res = http.get(TARGET_URL + '/bench/read-many?limit=20&offset=' + offset);
+    const afterId = iter * 20;
+    res = http.get(TARGET_URL + '/bench/read-many?limit=20&afterId=' + afterId);
   } else if (TEST_TYPE === 'create-one') {
     const rand = Math.floor(Math.random() * 1000001);
     res = http.get(TARGET_URL + '/bench/create-one?randomNumber=' + rand);

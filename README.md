@@ -46,7 +46,7 @@ All benchmark operations are executed using HTTP `GET` requests:
 | `plaintext` | `GET /bench/plaintext` | None | Returns `Hello, World!` as text/plain. |
 | `json` | `GET /bench/json` | None | Returns `{"message":"Hello, World!"}` as application/json. |
 | `read-one` | `GET /bench/read-one` | `?id=1` | Returns single record by ID. |
-| `read-many` | `GET /bench/read-many` | `?limit=20&offset=0` | Returns array of 20 records ordered by ID. |
+| `read-many` | `GET /bench/read-many` | `?limit=20&afterId=0` | Returns up to 20 records with `id > afterId`, ordered by ID. |
 | `create-one` | `GET /bench/create-one` | `?randomNumber=42` | Inserts single record with random number. |
 | `create-many` | `GET /bench/create-many` | `?randomNumber=42&randomNumber=43...` (20 items) | Inserts 20 records from repeated query params. |
 | `update-one` | `GET /bench/update-one` | `?record={"id":1,"randomNumber":42}` | Updates `random_number` for record with specified ID. |

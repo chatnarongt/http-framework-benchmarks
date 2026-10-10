@@ -491,7 +491,7 @@ export default function SetupPage() {
 									<code className="text-sky-300">/bench/plaintext</code>,{" "}
 									<code className="text-sky-300">/bench/json</code>,{" "}
 									<code className="text-sky-300">/bench/read-one?id=1</code>,{" "}
-									<code className="text-sky-300">/bench/read-many?limit=20&offset=0</code>,{" "}
+									<code className="text-sky-300">/bench/read-many?limit=20&afterId=0</code>,{" "}
 									<code className="text-sky-300">/bench/create-one?randomNumber=X</code>,{" "}
 									<code className="text-sky-300">/bench/create-many?randomNumber=X&...</code>,{" "}
 									<code className="text-sky-300">/bench/update-one?record=JSON</code>,{" "}
