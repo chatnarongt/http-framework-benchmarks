@@ -15,6 +15,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { type KnownRepo, RepoCombobox } from "@/components/RepoCombobox";
+import { TestTypeTip, testTypeTipId } from "@/components/TestTypeTip";
 import { cn } from "@/lib/cn";
 import { DATABASE_ENGINES, databaseProfiles } from "@/lib/engine/database-profiles";
 import { validDatabase } from "@/lib/engine/input-validation";
@@ -530,27 +531,36 @@ export default function SetupPage() {
 					</div>
 
 					<div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-						{ALL_TEST_TYPES.map((type) => {
+						{ALL_TEST_TYPES.map((type, index) => {
 							const isSelected = selectedTypes.includes(type);
 							return (
-								<button
+								<TestTypeTip
 									key={type}
-									type="button"
-									onClick={() => toggleType(type)}
-									className={cn(
-										"flex items-center gap-2 rounded-lg border px-3 py-2.5 font-mono text-xs transition-colors",
-										isSelected
-											? "border-sky-500 bg-sky-950/40 font-semibold text-sky-300"
-											: "border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-700",
+									type={type}
+									align={cn(
+										index % 2 === 1 ? "right-0" : "left-0",
+										index % 5 === 4 ? "md:right-0 md:left-auto" : "md:right-auto md:left-0",
 									)}
 								>
-									{isSelected ? (
-										<CheckSquare className="h-4 w-4 shrink-0 text-sky-400" />
-									) : (
-										<Square className="h-4 w-4 shrink-0 text-slate-600" />
-									)}
-									<span className="truncate">{type}</span>
-								</button>
+									<button
+										type="button"
+										onClick={() => toggleType(type)}
+										aria-describedby={testTypeTipId(type)}
+										className={cn(
+											"flex w-full items-center gap-2 rounded-lg border px-3 py-2.5 font-mono text-xs transition-colors",
+											isSelected
+												? "border-sky-500 bg-sky-950/40 font-semibold text-sky-300"
+												: "border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-700",
+										)}
+									>
+										{isSelected ? (
+											<CheckSquare className="h-4 w-4 shrink-0 text-sky-400" />
+										) : (
+											<Square className="h-4 w-4 shrink-0 text-slate-600" />
+										)}
+										<span className="truncate">{type}</span>
+									</button>
+								</TestTypeTip>
 							);
 						})}
 					</div>

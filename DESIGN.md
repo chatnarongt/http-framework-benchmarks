@@ -67,6 +67,7 @@ the remap, not a colour. What matters is the **role**:
 | hover | `bg-slate-800/30` | `#262626` |
 | chip | `bg-slate-800` | `#262626` |
 | selected | `bg-sky-950 ring-1 ring-sky-500` | `#262626` + `#e5e5e5` ring |
+| tooltip | `bg-slate-900 border border-slate-700 rounded-lg` | `#171717`, shown on hover and focus-within |
 
 Radius scale in use: `rounded` (badges), `rounded-lg` (controls), `rounded-xl`
 (cards), `rounded-full` (bars, pills).

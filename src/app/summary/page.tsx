@@ -13,6 +13,7 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
+import { TestTypeTip, testTypeTipId } from "@/components/TestTypeTip";
 import { cn } from "@/lib/cn";
 import { ALL_TEST_TYPES } from "@/lib/engine/types";
 import type { AggMode, SummaryAggregate } from "@/lib/summary";
@@ -279,20 +280,26 @@ export default function SummaryPage() {
 					<span className="mr-1 font-bold text-[11px] text-slate-500 uppercase tracking-wider">
 						Type
 					</span>
-					{availableTestTypes.map((t) => (
-						<button
-							type="button"
+					{availableTestTypes.map((t, index) => (
+						<TestTypeTip
 							key={t}
-							onClick={() => setTestType(t)}
-							className={cn(
-								"rounded-lg border px-3 py-1.5 font-mono font-semibold text-xs transition-colors",
-								t === testType
-									? "border-sky-500 bg-sky-500 text-slate-950"
-									: "border-slate-800 bg-slate-900 text-slate-300 hover:border-slate-600",
-							)}
+							type={t}
+							align={index < availableTestTypes.length / 2 ? "left-0" : "right-0"}
 						>
-							{t}
-						</button>
+							<button
+								type="button"
+								onClick={() => setTestType(t)}
+								aria-describedby={testTypeTipId(t)}
+								className={cn(
+									"rounded-lg border px-3 py-1.5 font-mono font-semibold text-xs transition-colors",
+									t === testType
+										? "border-sky-500 bg-sky-500 text-slate-950"
+										: "border-slate-800 bg-slate-900 text-slate-300 hover:border-slate-600",
+								)}
+							>
+								{t}
+							</button>
+						</TestTypeTip>
 					))}
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
