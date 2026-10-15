@@ -58,7 +58,7 @@ All benchmark operations are executed using HTTP `GET` requests:
 
 ## Example Repository
 
-Reference implementations — identical application code and contract, varying only the HTTP adapter and the runtime:
+Reference implementations. The NestJS repos share identical application code and vary only the HTTP adapter and the runtime. `elysiajs-pg-bun` is plain Elysia, with no NestJS layer:
 
 | Repository | HTTP adapter | Runtime |
 |---|---|---|
@@ -66,6 +66,7 @@ Reference implementations — identical application code and contract, varying o
 | [chatnarongt/nestjs-platform-express-bun](https://github.com/chatnarongt/nestjs-platform-express-bun.git) | Express | Bun |
 | [chatnarongt/nestjs-platform-fastify-node](https://github.com/chatnarongt/nestjs-platform-fastify-node.git) | Fastify | Node.js |
 | [chatnarongt/nestjs-platform-fastify-bun](https://github.com/chatnarongt/nestjs-platform-fastify-bun.git) | Fastify | Bun |
+| [chatnarongt/elysiajs-pg-bun](https://github.com/chatnarongt/elysiajs-pg-bun.git) | Elysia (no NestJS) | Bun |
 
 ---
 
