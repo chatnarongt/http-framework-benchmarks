@@ -6,6 +6,7 @@ import {
 	type RunStore,
 } from "./run-store";
 import { executeBenchmark } from "./runner";
+import { recordCompletedDuration } from "./timing";
 import { type BenchmarkConfig, extractRepoName } from "./types";
 
 interface QueueItem {
@@ -93,7 +94,17 @@ export class BenchmarkQueue {
 		this.currentAbortController = new AbortController();
 
 		try {
+			const startedAt = Date.now();
 			await this.execute(item.runId, item.config, this.currentAbortController.signal);
+			// Timing history for the start-button ETA; only completed runs count,
+			// aborted/failed runs would skew the average.
+			const finished = await prisma.benchmarkRun.findUnique({
+				where: { id: item.runId },
+				select: { status: true },
+			});
+			if (finished?.status === "COMPLETED") {
+				await recordCompletedDuration(item.config.repoUrl, Date.now() - startedAt);
+			}
 		} catch (err: any) {
 			console.error(`[Queue] Benchmark execution failed for ${item.runId}:`, err);
 		} finally {

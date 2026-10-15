@@ -5,7 +5,13 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
 	try {
 		const repos = await prisma.targetRepo.findMany({ orderBy: { lastUsedAt: "desc" } });
-		return NextResponse.json(repos);
+		return NextResponse.json(
+			repos.map((repo) => ({
+				...repo,
+				avgDurationMs:
+					repo.durationSamples > 0 ? Math.round(repo.durationTotalMs / repo.durationSamples) : null,
+			})),
+		);
 	} catch (err: any) {
 		return NextResponse.json({ error: err.message }, { status: 500 });
 	}

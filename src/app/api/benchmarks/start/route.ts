@@ -93,10 +93,12 @@ export async function POST(req: Request) {
 			),
 		);
 
-		// One row per repo per repeat, created atomically: a partial batch must never be enqueued.
+		// One row per repo per repeat, created atomically: a partial batch must never be
+		// enqueued. Repeat is the outer loop so batches round-robin (A,B,C,A,B,C) instead
+		// of running each repo back-to-back.
 		const runs = await prisma.$transaction(
-			repos.flatMap(({ repoUrl, database }) =>
-				Array.from({ length: runCount }, () =>
+			Array.from({ length: runCount }, () =>
+				repos.map(({ repoUrl, database }) =>
 					prisma.benchmarkRun.create({
 						data: {
 							repoName: extractRepoName(repoUrl),
@@ -117,7 +119,7 @@ export async function POST(req: Request) {
 						},
 					}),
 				),
-			),
+			).flat(),
 		);
 
 		for (const run of runs) {

@@ -13,6 +13,10 @@ model TargetRepo {
   database   String   @default("postgres")
   createdAt  DateTime @default(now())
   lastUsedAt DateTime @default(now())
+  // Durable timing history for the start-button ETA. Lives here, not on
+  // BenchmarkRun, so it survives run deletion/wipes.
+  durationSamples Int @default(0)
+  durationTotalMs Int @default(0)
 }
 
 model BenchmarkRun {

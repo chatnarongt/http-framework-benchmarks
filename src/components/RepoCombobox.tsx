@@ -9,6 +9,7 @@ export interface KnownRepo {
 	id: string;
 	repoUrl: string;
 	database: string;
+	avgDurationMs?: number | null;
 }
 
 interface RepoComboboxProps {

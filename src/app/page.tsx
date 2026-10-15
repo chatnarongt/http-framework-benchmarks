@@ -13,7 +13,7 @@ import {
 	Zap,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { type KnownRepo, RepoCombobox } from "@/components/RepoCombobox";
 import { TestTypeTip, testTypeTipId } from "@/components/TestTypeTip";
 import { cn } from "@/lib/cn";
@@ -26,6 +26,7 @@ import {
 	extractRepoName,
 	type TestType,
 } from "@/lib/engine/types";
+import { estimateBatchSeconds, formatDuration } from "@/lib/estimate";
 
 const STORAGE_KEY = "benchhub_config";
 
@@ -238,6 +239,32 @@ export default function SetupPage() {
 		setRepos((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
 
 	const activeRepos = repos.filter((r) => r.enabled && r.url.trim());
+
+	// Batch ETA: per-repo historical average (survives run wipes) with a
+	// settings-based formula fallback for repos without completed history.
+	const etaSeconds = useMemo(() => {
+		const avgByRepo = new Map(knownRepos.map((k) => [k.repoUrl, k.avgDurationMs ?? null]));
+		return estimateBatchSeconds({
+			repoAvgDurationsMs: activeRepos.map((r) => avgByRepo.get(r.url) ?? null),
+			runCount,
+			types: selectedTypes,
+			typeWorkloads,
+			vus,
+			totalRecords,
+			warmupSeconds,
+			cooldownSeconds,
+		});
+	}, [
+		activeRepos,
+		knownRepos,
+		runCount,
+		selectedTypes,
+		typeWorkloads,
+		vus,
+		totalRecords,
+		warmupSeconds,
+		cooldownSeconds,
+	]);
 
 	const resetDefaults = () => {
 		setRepos([defaultRepo()]);
@@ -910,7 +937,7 @@ export default function SetupPage() {
 						<span>
 							{loading
 								? "Starting Pipeline..."
-								: `Start ${activeRepos.length * runCount} Benchmark${activeRepos.length * runCount === 1 ? "" : "s"}`}
+								: `Start ${activeRepos.length * runCount} Benchmark${activeRepos.length * runCount === 1 ? "" : "s"} (~${formatDuration(etaSeconds)})`}
 						</span>
 					</button>
 				</div>
