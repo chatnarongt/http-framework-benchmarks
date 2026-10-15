@@ -58,7 +58,7 @@ All benchmark operations are executed using HTTP `GET` requests:
 
 ## Example Repository
 
-Reference implementations. The NestJS repos share identical application code and vary only the HTTP adapter and the runtime. `elysiajs-pg-bun` is plain Elysia, with no NestJS layer:
+Reference implementations. The NestJS repos share identical application code and vary only the HTTP adapter and the runtime. `elysia-pg-bun-sql` is plain Elysia, with no NestJS layer:
 
 | Repository | HTTP adapter | Runtime |
 |---|---|---|
@@ -66,8 +66,8 @@ Reference implementations. The NestJS repos share identical application code and
 | [chatnarongt/nestjs-platform-express-bun](https://github.com/chatnarongt/nestjs-platform-express-bun.git) | Express | Bun |
 | [chatnarongt/nestjs-platform-fastify-node](https://github.com/chatnarongt/nestjs-platform-fastify-node.git) | Fastify | Node.js |
 | [chatnarongt/nestjs-platform-fastify-bun](https://github.com/chatnarongt/nestjs-platform-fastify-bun.git) | Fastify | Bun |
-| [chatnarongt/elysiajs-pg-bun](https://github.com/chatnarongt/elysiajs-pg-bun.git) | Elysia (no NestJS) | Bun |
-| [chatnarongt/nestjs-platform-fastify-pg-node](https://github.com/chatnarongt/nestjs-platform-fastify-pg-node.git) | Fastify (pg-only) | Node.js |
+| [chatnarongt/elysia-pg-bun-sql](https://github.com/chatnarongt/elysia-pg-bun-sql.git) | Elysia (no NestJS) | Bun |
+| [chatnarongt/nestjs-platform-fastify-pg-node-pg](https://github.com/chatnarongt/nestjs-platform-fastify-pg-node-pg.git) | Fastify (pg-only) | Node.js |
 | [chatnarongt/nestjs-platform-fastify-pg-bun](https://github.com/chatnarongt/nestjs-platform-fastify-pg-bun.git) | Fastify (pg-only) | Bun |
 
 ---
