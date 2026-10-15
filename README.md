@@ -58,16 +58,17 @@ All benchmark operations are executed using HTTP `GET` requests:
 
 ## Example Repository
 
-Reference implementations, named `FRAMEWORK-(VARIANT-)DATABASE-RUNTIME-DRIVER` (`sql` driver = `Bun.SQL`, `pg` driver = node-postgres):
+Reference implementations, named `FRAMEWORK-(VARIANT-)DATABASE-RUNTIME-DRIVER` (`sql` driver = `Bun.SQL`, `pg` driver = node-postgres, `pgjs` driver = postgres.js):
 
 | Repository | HTTP adapter | Runtime | Driver |
 |---|---|---|---|
 | [chatnarongt/elysia-pg-bun-sql](https://github.com/chatnarongt/elysia-pg-bun-sql.git) | Elysia (no NestJS) | Bun | Bun.SQL |
+| [chatnarongt/elysia-pg-bun-pg](https://github.com/chatnarongt/elysia-pg-bun-pg.git) | Elysia (no NestJS) | Bun | pg |
+| [chatnarongt/elysia-pg-bun-pgjs](https://github.com/chatnarongt/elysia-pg-bun-pgjs.git) | Elysia (no NestJS) | Bun | pgjs |
 | [chatnarongt/nestjs-platform-bun-pg-bun-sql](https://github.com/chatnarongt/nestjs-platform-bun-pg-bun-sql.git) | Bun platform | Bun | Bun.SQL |
+| [chatnarongt/nestjs-platform-bun-pg-bun-pg](https://github.com/chatnarongt/nestjs-platform-bun-pg-bun-pg.git) | Bun platform | Bun | pg |
+| [chatnarongt/nestjs-platform-bun-pg-bun-pgjs](https://github.com/chatnarongt/nestjs-platform-bun-pg-bun-pgjs.git) | Bun platform | Bun | pgjs |
 | [chatnarongt/nestjs-platform-fastify-pg-node-pg](https://github.com/chatnarongt/nestjs-platform-fastify-pg-node-pg.git) | Fastify | Node.js | pg |
-
----
-
 ## Running BenchHub
 
 ### Prerequisites
