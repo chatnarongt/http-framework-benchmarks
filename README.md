@@ -67,6 +67,8 @@ Reference implementations. The NestJS repos share identical application code and
 | [chatnarongt/nestjs-platform-fastify-node](https://github.com/chatnarongt/nestjs-platform-fastify-node.git) | Fastify | Node.js |
 | [chatnarongt/nestjs-platform-fastify-bun](https://github.com/chatnarongt/nestjs-platform-fastify-bun.git) | Fastify | Bun |
 | [chatnarongt/elysiajs-pg-bun](https://github.com/chatnarongt/elysiajs-pg-bun.git) | Elysia (no NestJS) | Bun |
+| [chatnarongt/nestjs-platform-fastify-pg-node](https://github.com/chatnarongt/nestjs-platform-fastify-pg-node.git) | Fastify (pg-only) | Node.js |
+| [chatnarongt/nestjs-platform-fastify-pg-bun](https://github.com/chatnarongt/nestjs-platform-fastify-pg-bun.git) | Fastify (pg-only) | Bun |
 
 ---
 
