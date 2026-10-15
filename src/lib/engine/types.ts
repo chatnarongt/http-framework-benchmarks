@@ -71,7 +71,7 @@ export const DEFAULT_BENCHMARK_CONFIG: Readonly<
 		| "dbMemLimit"
 	> & { warmupSeconds: number; cooldownSeconds: number; namespace: string }
 > = Object.freeze({
-	repoUrl: "https://github.com/chatnarongt/nestjs-platform-express-node.git",
+	repoUrl: "https://github.com/chatnarongt/nestjs-platform-fastify-pg-node-pg.git",
 	database: "postgres",
 	namespace:
 		(typeof process !== "undefined" &&

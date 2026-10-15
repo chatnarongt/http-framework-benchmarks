@@ -8,8 +8,8 @@ import {
 
 function makeConfig(overrides: Partial<BenchmarkConfig> = {}): BenchmarkConfig {
 	return {
-		repoName: "nestjs-platform-express-node",
-		repoUrl: "https://github.com/chatnarongt/nestjs-platform-express-node.git",
+		repoName: "nestjs-platform-fastify-pg-node-pg",
+		repoUrl: "https://github.com/chatnarongt/nestjs-platform-fastify-pg-node-pg.git",
 		database: "postgres",
 		types: ["plaintext", "json", "read-one"],
 		vus: 100,
@@ -26,20 +26,20 @@ function makeConfig(overrides: Partial<BenchmarkConfig> = {}): BenchmarkConfig {
 function testExtractRepoName() {
 	console.log("run-context: testing extractRepoName...");
 	assert.strictEqual(
-		extractRepoName("https://github.com/chatnarongt/nestjs-platform-express-node.git"),
-		"nestjs-platform-express-node",
+		extractRepoName("https://github.com/chatnarongt/nestjs-platform-fastify-pg-node-pg.git"),
+		"nestjs-platform-fastify-pg-node-pg",
 	);
 	assert.strictEqual(
-		extractRepoName("https://github.com/chatnarongt/nestjs-platform-express-node/"),
-		"nestjs-platform-express-node",
+		extractRepoName("https://github.com/chatnarongt/nestjs-platform-fastify-pg-node-pg/"),
+		"nestjs-platform-fastify-pg-node-pg",
 	);
 	assert.strictEqual(
-		extractRepoName("git@github.com:chatnarongt/nestjs-platform-express-node.git"),
-		"nestjs-platform-express-node",
+		extractRepoName("git@github.com:chatnarongt/nestjs-platform-fastify-pg-node-pg.git"),
+		"nestjs-platform-fastify-pg-node-pg",
 	);
 	assert.strictEqual(
-		extractRepoName("/tmp/repos/nestjs-platform-express-node"),
-		"nestjs-platform-express-node",
+		extractRepoName("/tmp/repos/nestjs-platform-fastify-pg-node-pg"),
+		"nestjs-platform-fastify-pg-node-pg",
 	);
 	console.log("extractRepoName tests passed.");
 }
@@ -54,7 +54,7 @@ function testRunContextDerivation() {
 		"suffix must be last 8 alphanumeric chars of run id, lowercased",
 	);
 	assert.strictEqual(ctx.namespace, "benchmark");
-	assert.strictEqual(ctx.imageTag, "nestjs-platform-express-node:abc12345");
+	assert.strictEqual(ctx.imageTag, "nestjs-platform-fastify-pg-node-pg:abc12345");
 	assert.strictEqual(ctx.app.label, "app-abc12345");
 	assert.strictEqual(ctx.app.deploymentName, "app-deployment-abc12345");
 	assert.strictEqual(ctx.app.serviceName, "app-service-abc12345");
@@ -128,7 +128,7 @@ function testDefaultConfig() {
 	assert.strictEqual(DEFAULT_BENCHMARK_CONFIG.dbMemLimit, "8Gi");
 	assert.strictEqual(
 		DEFAULT_BENCHMARK_CONFIG.repoUrl,
-		"https://github.com/chatnarongt/nestjs-platform-express-node.git",
+		"https://github.com/chatnarongt/nestjs-platform-fastify-pg-node-pg.git",
 	);
 	console.log("default config tests passed.");
 }

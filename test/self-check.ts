@@ -17,20 +17,20 @@ import { prisma } from "../src/lib/prisma";
 function testExtractRepoName() {
 	console.log("Testing extractRepoName...");
 	assert.strictEqual(
-		extractRepoName("https://github.com/chatnarongt/nestjs-platform-express-node.git"),
-		"nestjs-platform-express-node",
+		extractRepoName("https://github.com/chatnarongt/nestjs-platform-fastify-pg-node-pg.git"),
+		"nestjs-platform-fastify-pg-node-pg",
 	);
 	assert.strictEqual(
-		extractRepoName("https://github.com/chatnarongt/nestjs-platform-express-node/"),
-		"nestjs-platform-express-node",
+		extractRepoName("https://github.com/chatnarongt/nestjs-platform-fastify-pg-node-pg/"),
+		"nestjs-platform-fastify-pg-node-pg",
 	);
 	assert.strictEqual(
-		extractRepoName("git@github.com:chatnarongt/nestjs-platform-express-node.git"),
-		"nestjs-platform-express-node",
+		extractRepoName("git@github.com:chatnarongt/nestjs-platform-fastify-pg-node-pg.git"),
+		"nestjs-platform-fastify-pg-node-pg",
 	);
 	assert.strictEqual(
-		extractRepoName("/tmp/repos/nestjs-platform-express-node"),
-		"nestjs-platform-express-node",
+		extractRepoName("/tmp/repos/nestjs-platform-fastify-pg-node-pg"),
+		"nestjs-platform-fastify-pg-node-pg",
 	);
 	console.log("extractRepoName tests passed.");
 }
@@ -43,8 +43,8 @@ async function testPrisma() {
 	});
 	const run = await prisma.benchmarkRun.create({
 		data: {
-			repoName: "nestjs-platform-express-node",
-			repoUrl: "https://github.com/chatnarongt/nestjs-platform-express-node.git",
+			repoName: "nestjs-platform-fastify-pg-node-pg",
+			repoUrl: "https://github.com/chatnarongt/nestjs-platform-fastify-pg-node-pg.git",
 			database: "postgres",
 			vus: 50,
 			totalRecords: 100000,
@@ -53,7 +53,7 @@ async function testPrisma() {
 		},
 	});
 	assert(run.id, "run id should exist");
-	assert.strictEqual(run.repoName, "nestjs-platform-express-node");
+	assert.strictEqual(run.repoName, "nestjs-platform-fastify-pg-node-pg");
 	assert.strictEqual(run.namespace, "benchmark");
 	assert.strictEqual(run.totalRecords, 100000);
 	assert.strictEqual(run.typeWorkloads, sampleWorkloads);
