@@ -72,7 +72,7 @@ Reference implementations, named `FRAMEWORK-(VARIANT-)DATABASE-RUNTIME-DRIVER` (
 ## Running BenchHub
 
 ### Prerequisites
-- Node.js 22+ or Bun 1.4+
+- Node.js 22.12+ on the 22 line, Node.js 24+, or Bun 1.4+
 - Docker
 - Kubernetes (`kubectl`) configured to an active cluster (e.g. Colima / k3s with metrics-server enabled)
 

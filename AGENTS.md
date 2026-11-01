@@ -13,7 +13,7 @@ Bun + Next.js 16 app that benchmarks third-party HTTP framework repos on Kuberne
 - The client is generated into `src/generated/prisma/`, which is gitignored. Import it from `@/generated/prisma/client`, never `@prisma/client`.
 - Runtime connects through `@prisma/adapter-libsql` (`PrismaLibSql`). The CLI datasource URL lives in `prisma.config.ts` because the schema has no `url`.
 - There are no migrations and `*.db` is gitignored. On a fresh checkout, create the DB with `bunx prisma db push`.
-- Versions are pinned exactly (`7.10.0`). `prisma` is a devDependency.
+- Prisma versions are pinned exactly and kept in sync. `prisma` is a devDependency.
 
 ## Architecture
 - API routes in `src/app/api/**` call `benchmarkQueue` (`src/lib/engine/queue.ts`), an in-process `globalThis` singleton that runs one job at a time. Restarting the server drops queued jobs.
