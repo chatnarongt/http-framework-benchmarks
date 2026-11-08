@@ -3,18 +3,18 @@ import Link from "next/link";
 
 export function Navbar() {
 	return (
-		<header className="sticky top-0 z-50 border-slate-800 border-b bg-slate-950/80 backdrop-blur">
+		<header className="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/80 backdrop-blur">
 			<div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
 				<Link
 					href="/"
-					className="flex items-center space-x-3 font-bold text-lg text-sky-400 tracking-wide"
+					className="flex items-center space-x-3 text-lg font-bold tracking-wide text-sky-400"
 				>
 					<Activity className="h-6 w-6 text-sky-400" />
 					<span className="text-white">
 						Bench<span className="text-sky-400">Hub</span>
 					</span>
 				</Link>
-				<nav className="flex items-center space-x-6 font-medium text-sm">
+				<nav className="flex items-center space-x-6 text-sm font-medium">
 					<Link
 						href="/"
 						className="flex items-center space-x-2 text-slate-300 transition-colors hover:text-white"

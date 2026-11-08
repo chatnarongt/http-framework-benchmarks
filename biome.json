@@ -25,7 +25,10 @@
 				"noExplicitAny": "off"
 			},
 			"nursery": {
-				"useTailwindSortedClasses": "warn"
+				"useTailwindSortedClasses": {
+					"level": "warn",
+					"fix": "safe"
+				}
 			}
 		}
 	},

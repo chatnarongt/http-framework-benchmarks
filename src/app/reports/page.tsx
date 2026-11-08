@@ -136,18 +136,18 @@ export default function ReportsListPage() {
 		<div className="space-y-6">
 			<div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
 				<div>
-					<h1 className="flex items-center gap-3 font-black text-2xl text-white tracking-tight">
+					<h1 className="flex items-center gap-3 text-2xl font-black tracking-tight text-white">
 						<BarChart2 className="h-7 w-7 text-sky-400" />
 						<span>Benchmark Reports</span>
 					</h1>
-					<p className="mt-1 text-slate-400 text-xs">
+					<p className="mt-1 text-xs text-slate-400">
 						Historical benchmark executions and performance metrics
 					</p>
 				</div>
 				<div className="flex items-center gap-3">
 					<Link
 						href="/benchmarks/live"
-						className="inline-flex items-center gap-2 rounded-lg border border-slate-700 border-dashed bg-transparent px-3.5 py-2 font-semibold text-slate-300 text-xs transition-colors hover:border-slate-500 hover:text-white"
+						className="inline-flex items-center gap-2 rounded-lg border border-dashed border-slate-700 bg-transparent px-3.5 py-2 text-xs font-semibold text-slate-300 transition-colors hover:border-slate-500 hover:text-white"
 						title="Follow the live benchmark and hop to the next queued run automatically"
 					>
 						<Radio className="h-4 w-4 text-sky-400" />
@@ -156,7 +156,7 @@ export default function ReportsListPage() {
 					{activeRun && (
 						<Link
 							href={`/benchmarks/${activeRun.id}`}
-							className="inline-flex items-center gap-2 rounded-lg border border-sky-500/40 bg-sky-500/10 px-3.5 py-2 font-semibold text-sky-300 text-xs shadow-sm transition-all hover:bg-sky-500/20"
+							className="inline-flex items-center gap-2 rounded-lg border border-sky-500/40 bg-sky-500/10 px-3.5 py-2 text-xs font-semibold text-sky-300 shadow-sm transition-all hover:bg-sky-500/20"
 							title={`View running benchmark: ${activeRun.repoName || activeRun.id}`}
 						>
 							<Activity className="h-4 w-4 animate-pulse text-sky-400" />
@@ -173,7 +173,7 @@ export default function ReportsListPage() {
 					)}
 					<Link
 						href="/"
-						className="inline-flex items-center gap-2 rounded-lg bg-sky-500 px-4 py-2 font-bold text-slate-950 text-xs transition-colors hover:bg-sky-400"
+						className="inline-flex items-center gap-2 rounded-lg bg-sky-500 px-4 py-2 text-xs font-bold text-slate-950 transition-colors hover:bg-sky-400"
 					>
 						<PlayCircle className="h-4 w-4" />
 						<span>New Benchmark</span>
@@ -182,7 +182,7 @@ export default function ReportsListPage() {
 						type="button"
 						onClick={clearAll}
 						disabled={clearing || runs.length === 0}
-						className="inline-flex items-center gap-2 rounded-lg border border-slate-700 border-dashed px-3.5 py-2 font-semibold text-slate-300 text-xs transition-colors hover:border-slate-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+						className="inline-flex items-center gap-2 rounded-lg border border-dashed border-slate-700 px-3.5 py-2 text-xs font-semibold text-slate-300 transition-colors hover:border-slate-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
 						title="Delete every benchmark report, stopping anything still running"
 					>
 						<Trash2 className="h-4 w-4" />
@@ -194,7 +194,7 @@ export default function ReportsListPage() {
 			{runs.length > 0 && (
 				<div className="space-y-3">
 					<div className="flex flex-wrap items-center gap-2">
-						<span className="mr-1 font-bold text-[11px] text-slate-500 uppercase tracking-wider">
+						<span className="mr-1 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
 							Status
 						</span>
 						{STATUS_OPTIONS.map((s) => (
@@ -203,7 +203,7 @@ export default function ReportsListPage() {
 								key={s}
 								onClick={() => setFilters((f) => ({ ...f, status: s }))}
 								className={cn(
-									"rounded-lg border px-3 py-1.5 font-mono font-semibold text-xs transition-colors",
+									"rounded-lg border px-3 py-1.5 font-mono text-xs font-semibold transition-colors",
 									s === filters.status
 										? "border-sky-500 bg-sky-500 text-slate-950"
 										: "border-slate-800 bg-slate-900 text-slate-300 hover:border-slate-600",
@@ -214,7 +214,7 @@ export default function ReportsListPage() {
 						))}
 					</div>
 					<div className="flex flex-wrap items-center gap-2">
-						<span className="mr-1 font-bold text-[11px] text-slate-500 uppercase tracking-wider">
+						<span className="mr-1 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
 							Name
 						</span>
 						<input
@@ -226,17 +226,17 @@ export default function ReportsListPage() {
 						/>
 					</div>
 					<div className="flex flex-wrap items-center gap-2">
-						<span className="mr-1 font-bold text-[11px] text-slate-500 uppercase tracking-wider">
+						<span className="mr-1 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
 							Date
 						</span>
-						<span className="text-slate-400 text-xs">From</span>
+						<span className="text-xs text-slate-400">From</span>
 						<input
 							type="date"
 							value={filters.from}
 							onChange={(e) => setFilters((f) => ({ ...f, from: e.target.value }))}
 							className={cn(INPUT_CLS, "[color-scheme:dark]")}
 						/>
-						<span className="text-slate-400 text-xs">To</span>
+						<span className="text-xs text-slate-400">To</span>
 						<input
 							type="date"
 							value={filters.to}
@@ -247,7 +247,7 @@ export default function ReportsListPage() {
 							<button
 								type="button"
 								onClick={() => setFilters(EMPTY_FILTERS)}
-								className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 font-mono font-semibold text-slate-300 text-xs transition-colors hover:border-slate-600 hover:text-white"
+								className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 font-mono text-xs font-semibold text-slate-300 transition-colors hover:border-slate-600 hover:text-white"
 							>
 								Clear Filters
 							</button>
@@ -258,21 +258,21 @@ export default function ReportsListPage() {
 
 			{runs.length === 0 ? (
 				<div className="space-y-4 rounded-xl border border-slate-800 bg-slate-900 p-12 text-center">
-					<div className="text-slate-400 text-sm">No benchmarks recorded yet.</div>
+					<div className="text-sm text-slate-400">No benchmarks recorded yet.</div>
 					<Link
 						href="/"
-						className="inline-flex items-center gap-2 rounded-lg bg-sky-500 px-4 py-2 font-bold text-slate-950 text-xs"
+						className="inline-flex items-center gap-2 rounded-lg bg-sky-500 px-4 py-2 text-xs font-bold text-slate-950"
 					>
 						Run Your First Benchmark
 					</Link>
 				</div>
 			) : filteredRuns.length === 0 ? (
 				<div className="space-y-4 rounded-xl border border-slate-800 bg-slate-900 p-12 text-center">
-					<div className="text-slate-400 text-sm">No runs match the current filters.</div>
+					<div className="text-sm text-slate-400">No runs match the current filters.</div>
 					<button
 						type="button"
 						onClick={() => setFilters(EMPTY_FILTERS)}
-						className="inline-flex items-center gap-2 rounded-lg bg-sky-500 px-4 py-2 font-bold text-slate-950 text-xs transition-colors hover:bg-sky-400"
+						className="inline-flex items-center gap-2 rounded-lg bg-sky-500 px-4 py-2 text-xs font-bold text-slate-950 transition-colors hover:bg-sky-400"
 					>
 						Clear Filters
 					</button>
@@ -289,15 +289,15 @@ export default function ReportsListPage() {
 								>
 									<div className="space-y-1">
 										<div className="flex items-center gap-3">
-											<span className="font-bold font-mono text-base text-white">
+											<span className="font-mono text-base font-bold text-white">
 												{run.repoName || run.id}
 											</span>
 											{run.repoName && (
-												<span className="font-mono text-slate-500 text-xs">({run.id})</span>
+												<span className="font-mono text-xs text-slate-500">({run.id})</span>
 											)}
 											<span
 												className={cn(
-													"rounded border px-2 py-0.5 font-semibold text-[11px] uppercase tracking-wider",
+													"rounded border px-2 py-0.5 text-[11px] font-semibold tracking-wider uppercase",
 													statusTone(run.status),
 												)}
 											>
@@ -311,11 +311,11 @@ export default function ReportsListPage() {
 													Queued #{queuedIds.indexOf(run.id) + 1}
 												</span>
 											)}
-											<span className="rounded bg-slate-800 px-2 py-0.5 font-semibold text-sky-400 text-xs uppercase">
+											<span className="rounded bg-slate-800 px-2 py-0.5 text-xs font-semibold text-sky-400 uppercase">
 												{run.database}
 											</span>
 										</div>
-										<div className="flex items-center gap-4 pt-1 font-mono text-slate-400 text-xs">
+										<div className="flex items-center gap-4 pt-1 font-mono text-xs text-slate-400">
 											<span className="flex items-center gap-1">
 												<Calendar className="h-3.5 w-3.5 text-slate-500" />
 												{new Date(run.createdAt).toLocaleString()}
@@ -331,7 +331,7 @@ export default function ReportsListPage() {
 											<>
 												<Link
 													href={`/benchmarks/${run.id}`}
-													className="inline-flex items-center gap-1.5 rounded-lg bg-sky-500 px-3 py-1.5 font-bold text-slate-950 text-xs shadow-sm transition-colors hover:bg-sky-400"
+													className="inline-flex items-center gap-1.5 rounded-lg bg-sky-500 px-3 py-1.5 text-xs font-bold text-slate-950 shadow-sm transition-colors hover:bg-sky-400"
 												>
 													<Activity className="h-3.5 w-3.5 animate-pulse" />
 													<span>View Live</span>
@@ -340,7 +340,7 @@ export default function ReportsListPage() {
 												<button
 													type="button"
 													onClick={(e) => handleStop(run.id, e)}
-													className="flex items-center gap-1 rounded border border-slate-600 border-dashed bg-transparent px-2.5 py-1.5 font-semibold text-slate-300 text-xs transition-colors hover:border-slate-400 hover:bg-slate-800 hover:text-white"
+													className="flex items-center gap-1 rounded border border-dashed border-slate-600 bg-transparent px-2.5 py-1.5 text-xs font-semibold text-slate-300 transition-colors hover:border-slate-400 hover:bg-slate-800 hover:text-white"
 													title="Stop benchmark"
 												>
 													<StopCircle className="h-3.5 w-3.5 text-slate-400" />
@@ -351,7 +351,7 @@ export default function ReportsListPage() {
 											<>
 												<Link
 													href={`/benchmarks/${run.id}`}
-													className="inline-flex items-center gap-1.5 rounded-lg bg-slate-800 px-2.5 py-1.5 font-medium text-slate-300 text-xs transition-colors hover:bg-slate-700"
+													className="inline-flex items-center gap-1.5 rounded-lg bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-slate-300 transition-colors hover:bg-slate-700"
 													title="View benchmark execution logs"
 												>
 													<Terminal className="h-3.5 w-3.5 text-slate-400" />
@@ -359,7 +359,7 @@ export default function ReportsListPage() {
 												</Link>
 												<Link
 													href={`/reports/${run.id}`}
-													className="inline-flex items-center gap-1.5 rounded-lg bg-slate-800 px-3 py-1.5 font-semibold text-slate-200 text-xs transition-colors hover:bg-slate-700"
+													className="inline-flex items-center gap-1.5 rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-200 transition-colors hover:bg-slate-700"
 												>
 													<span>View Report</span>
 													<ArrowRight className="h-3.5 w-3.5" />

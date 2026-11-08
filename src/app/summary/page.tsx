@@ -193,7 +193,7 @@ export default function SummaryPage() {
 	if (error) {
 		return (
 			<div className="space-y-4 py-20 text-center">
-				<div className="font-bold text-white text-xl">{error}</div>
+				<div className="text-xl font-bold text-white">{error}</div>
 				<Link href="/reports" className="text-sky-400 underline">
 					Back to Reports
 				</Link>
@@ -204,8 +204,8 @@ export default function SummaryPage() {
 	if (availableTestTypes.length === 0) {
 		return (
 			<div className="space-y-4 py-20 text-center">
-				<div className="font-bold text-slate-200 text-xl">No completed benchmarks yet</div>
-				<p className="text-slate-400 text-sm">Run a benchmark to see the summary graph.</p>
+				<div className="text-xl font-bold text-slate-200">No completed benchmarks yet</div>
+				<p className="text-sm text-slate-400">Run a benchmark to see the summary graph.</p>
 				<Link href="/" className="text-sky-400 underline">
 					New Benchmark
 				</Link>
@@ -218,16 +218,16 @@ export default function SummaryPage() {
 			<div>
 				<Link
 					href="/reports"
-					className="mb-2 inline-flex items-center gap-1.5 text-slate-400 text-xs transition-colors hover:text-sky-400"
+					className="mb-2 inline-flex items-center gap-1.5 text-xs text-slate-400 transition-colors hover:text-sky-400"
 				>
 					<ArrowLeft className="h-3.5 w-3.5" />
 					<span>All Reports</span>
 				</Link>
-				<h1 className="flex items-center gap-3 font-black text-2xl text-white tracking-tight">
+				<h1 className="flex items-center gap-3 text-2xl font-black tracking-tight text-white">
 					<LineChart className="h-7 w-7 text-sky-400" />
 					<span>Summary</span>
 				</h1>
-				<p className="mt-1 text-slate-400 text-xs">
+				<p className="mt-1 text-xs text-slate-400">
 					{mode === "avg"
 						? "Average score per framework across completed runs for the selected database and test type."
 						: "Best score per framework for the selected database and test type. Resources pick the lowest peak; throughput the highest req/s."}
@@ -236,7 +236,7 @@ export default function SummaryPage() {
 
 			<div className="space-y-3">
 				<div className="flex flex-wrap items-center gap-2">
-					<span className="mr-1 font-bold text-[11px] text-slate-500 uppercase tracking-wider">
+					<span className="mr-1 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
 						Aggregate
 					</span>
 					{AGG_MODES.map((m) => (
@@ -245,7 +245,7 @@ export default function SummaryPage() {
 							key={m}
 							onClick={() => setMode(m)}
 							className={cn(
-								"rounded-lg border px-3 py-1.5 font-mono font-semibold text-xs transition-colors",
+								"rounded-lg border px-3 py-1.5 font-mono text-xs font-semibold transition-colors",
 								m === mode
 									? "border-sky-500 bg-sky-500 text-slate-950"
 									: "border-slate-800 bg-slate-900 text-slate-300 hover:border-slate-600",
@@ -256,7 +256,7 @@ export default function SummaryPage() {
 					))}
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
-					<span className="mr-1 font-bold text-[11px] text-slate-500 uppercase tracking-wider">
+					<span className="mr-1 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
 						Database
 					</span>
 					{availableDatabases.map((db) => (
@@ -265,7 +265,7 @@ export default function SummaryPage() {
 							key={db}
 							onClick={() => setDatabase(db)}
 							className={cn(
-								"inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 font-mono font-semibold text-xs capitalize transition-colors",
+								"inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 font-mono text-xs font-semibold capitalize transition-colors",
 								db === database
 									? "border-sky-500 bg-sky-500 text-slate-950"
 									: "border-slate-800 bg-slate-900 text-slate-300 hover:border-slate-600",
@@ -277,7 +277,7 @@ export default function SummaryPage() {
 					))}
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
-					<span className="mr-1 font-bold text-[11px] text-slate-500 uppercase tracking-wider">
+					<span className="mr-1 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
 						Type
 					</span>
 					{availableTestTypes.map((t, index) => (
@@ -291,7 +291,7 @@ export default function SummaryPage() {
 								onClick={() => setTestType(t)}
 								aria-describedby={testTypeTipId(t)}
 								className={cn(
-									"rounded-lg border px-3 py-1.5 font-mono font-semibold text-xs transition-colors",
+									"rounded-lg border px-3 py-1.5 font-mono text-xs font-semibold transition-colors",
 									t === testType
 										? "border-sky-500 bg-sky-500 text-slate-950"
 										: "border-slate-800 bg-slate-900 text-slate-300 hover:border-slate-600",
@@ -303,7 +303,7 @@ export default function SummaryPage() {
 					))}
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
-					<span className="mr-1 font-bold text-[11px] text-slate-500 uppercase tracking-wider">
+					<span className="mr-1 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
 						Runs
 					</span>
 					{availableRuns.map((name) => (
@@ -312,7 +312,7 @@ export default function SummaryPage() {
 							key={name}
 							onClick={() => toggleRun(name)}
 							className={cn(
-								"inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 font-mono font-semibold text-xs transition-colors",
+								"inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 font-mono text-xs font-semibold transition-colors",
 								!hiddenRuns.includes(name)
 									? "border-sky-500 bg-sky-500 text-slate-950"
 									: "border-slate-800 bg-slate-900 text-slate-300 hover:border-slate-600",
@@ -329,7 +329,7 @@ export default function SummaryPage() {
 					))}
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
-					<span className="mr-1 font-bold text-[11px] text-slate-500 uppercase tracking-wider">
+					<span className="mr-1 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
 						Metrics
 					</span>
 					{METRIC_CONFIGS.map(({ key, label }) => (
@@ -338,7 +338,7 @@ export default function SummaryPage() {
 							key={key}
 							onClick={() => toggleMetric(key)}
 							className={cn(
-								"inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 font-mono font-semibold text-xs transition-colors",
+								"inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 font-mono text-xs font-semibold transition-colors",
 								visibleMetrics.includes(key)
 									? "border-sky-500 bg-sky-500 text-slate-950"
 									: "border-slate-800 bg-slate-900 text-slate-300 hover:border-slate-600",
@@ -357,7 +357,7 @@ export default function SummaryPage() {
 					))}
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
-					<span className="mr-1 font-bold text-[11px] text-slate-500 uppercase tracking-wider">
+					<span className="mr-1 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
 						Sort
 					</span>
 					{SORT_OPTIONS.map((s) => (
@@ -366,7 +366,7 @@ export default function SummaryPage() {
 							key={s}
 							onClick={() => setSortBy(s)}
 							className={cn(
-								"rounded-lg border px-3 py-1.5 font-mono font-semibold text-xs transition-colors",
+								"rounded-lg border px-3 py-1.5 font-mono text-xs font-semibold transition-colors",
 								s === sortBy
 									? "border-sky-500 bg-sky-500 text-slate-950"
 									: "border-slate-800 bg-slate-900 text-slate-300 hover:border-slate-600",
@@ -382,17 +382,17 @@ export default function SummaryPage() {
 				<div className="rounded-xl border border-slate-800 bg-slate-900 p-12 text-center">
 					{hiddenRuns.length > 0 ? (
 						<div className="space-y-4">
-							<div className="text-slate-400 text-sm">No runs selected.</div>
+							<div className="text-sm text-slate-400">No runs selected.</div>
 							<button
 								type="button"
 								onClick={() => setHiddenRuns([])}
-								className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 font-mono font-semibold text-slate-300 text-xs transition-colors hover:border-slate-600"
+								className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 font-mono text-xs font-semibold text-slate-300 transition-colors hover:border-slate-600"
 							>
 								Show All
 							</button>
 						</div>
 					) : (
-						<div className="text-slate-400 text-sm">
+						<div className="text-sm text-slate-400">
 							No benchmarks for <span className="font-mono text-sky-400">{database}</span> with test
 							type <span className="font-mono text-sky-400">{testType}</span>.
 						</div>
@@ -400,7 +400,7 @@ export default function SummaryPage() {
 				</div>
 			) : shownMetrics.length === 0 ? (
 				<div className="rounded-xl border border-slate-800 bg-slate-900 p-12 text-center">
-					<div className="text-slate-400 text-sm">No metrics selected.</div>
+					<div className="text-sm text-slate-400">No metrics selected.</div>
 				</div>
 			) : (
 				<div className="space-y-6">
@@ -410,7 +410,7 @@ export default function SummaryPage() {
 							className="flex flex-col rounded-xl border border-slate-800 bg-slate-900 p-6"
 						>
 							<div className="mb-4 flex items-baseline justify-between">
-								<h2 className="font-bold text-slate-200 text-sm">{`${label} (${
+								<h2 className="text-sm font-bold text-slate-200">{`${label} (${
 									mode === "avg" ? "average" : "best"
 								})`}</h2>
 								<span className="text-[11px] text-slate-500">{hint}</span>

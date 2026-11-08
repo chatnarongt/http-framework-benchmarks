@@ -41,7 +41,7 @@ export function TestTypeTip({
 				id={testTypeTipId(type)}
 				role="tooltip"
 				className={cn(
-					"pointer-events-none invisible absolute top-full z-10 mt-1 w-64 max-w-[80vw] rounded-lg border border-slate-700 bg-slate-900 p-2.5 font-mono font-normal text-slate-300 text-xs opacity-0 transition-opacity group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100",
+					"pointer-events-none invisible absolute top-full z-10 mt-1 w-64 max-w-[80vw] rounded-lg border border-slate-700 bg-slate-900 p-2.5 font-mono text-xs font-normal text-slate-300 opacity-0 transition-opacity group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100",
 					align,
 				)}
 			>

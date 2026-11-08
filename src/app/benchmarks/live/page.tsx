@@ -33,11 +33,11 @@ export default function BenchmarkQueueLivePage() {
 	if (!viewId) {
 		return (
 			<div className="space-y-4 py-20 text-center">
-				<div className="flex items-center justify-center gap-2 font-bold text-slate-200 text-xl">
+				<div className="flex items-center justify-center gap-2 text-xl font-bold text-slate-200">
 					<Radio className="h-6 w-6 text-slate-500" />
 					<span>No live or queued runs</span>
 				</div>
-				<p className="text-slate-400 text-sm">
+				<p className="text-sm text-slate-400">
 					This page follows the running benchmark and hops to the next queued run automatically.
 				</p>
 				<Link href="/reports" className="text-sky-400 underline">

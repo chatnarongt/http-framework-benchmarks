@@ -357,18 +357,18 @@ export default function SetupPage() {
 	return (
 		<div className="space-y-8">
 			<div>
-				<h1 className="flex items-center gap-3 font-extrabold text-3xl text-white tracking-tight">
+				<h1 className="flex items-center gap-3 text-3xl font-extrabold tracking-tight text-white">
 					<Zap className="h-8 w-8 text-sky-400" />
 					Benchmark Setup
 				</h1>
-				<p className="mt-2 text-slate-400 text-sm">
+				<p className="mt-2 text-sm text-slate-400">
 					Configure test parameters, target repositories, and per-repo target database. Executes
 					inside Kubernetes using k6.
 				</p>
 			</div>
 
 			{error && (
-				<div className="rounded-lg border border-slate-600 border-dashed bg-slate-900 p-4 text-slate-200 text-sm">
+				<div className="rounded-lg border border-dashed border-slate-600 bg-slate-900 p-4 text-sm text-slate-200">
 					{error}
 				</div>
 			)}
@@ -377,9 +377,9 @@ export default function SetupPage() {
 				{/* Repository */}
 				<div className="space-y-4 rounded-xl border border-slate-800 bg-slate-900 p-6">
 					<div className="flex items-center justify-between">
-						<h3 className="block font-semibold text-slate-200 text-sm">
+						<h3 className="block text-sm font-semibold text-slate-200">
 							Target Repositories (Git URLs or Local Paths)
-							<span className="ml-2 font-normal text-slate-500 text-xs">
+							<span className="ml-2 text-xs font-normal text-slate-500">
 								{activeRepos.length} of {repos.length} enabled — {runCount} run
 								{runCount === 1 ? "" : "s"} each
 							</span>
@@ -387,7 +387,7 @@ export default function SetupPage() {
 						<button
 							type="button"
 							onClick={() => setShowRequirements(!showRequirements)}
-							className="font-semibold text-sky-400 text-xs hover:text-sky-300"
+							className="text-xs font-semibold text-sky-400 hover:text-sky-300"
 						>
 							{showRequirements ? "Hide Specification" : "View Repository Requirements"}
 						</button>
@@ -403,7 +403,7 @@ export default function SetupPage() {
 								)}
 							>
 								<div className="flex-1 space-y-1">
-									<div className="flex items-center gap-2 text-slate-500 text-xs">
+									<div className="flex items-center gap-2 text-xs text-slate-500">
 										<span>Name:</span>
 										<input
 											type="text"
@@ -453,7 +453,7 @@ export default function SetupPage() {
 									<select
 										value={repo.database}
 										onChange={(e) => updateRepo(index, { database: validDatabase(e.target.value) })}
-										className="h-9 w-full appearance-none rounded-lg border border-slate-700 bg-slate-950 pr-8 pl-3 text-slate-100 text-sm focus:border-sky-500 focus:outline-none"
+										className="h-9 w-full appearance-none rounded-lg border border-slate-700 bg-slate-950 pr-8 pl-3 text-sm text-slate-100 focus:border-sky-500 focus:outline-none"
 										title="Target database for this repository"
 									>
 										{DATABASE_ENGINES.map((id) => (
@@ -483,7 +483,7 @@ export default function SetupPage() {
 						))}
 					</div>
 
-					<div className="flex flex-col justify-between gap-2 text-slate-500 text-xs sm:flex-row sm:items-center">
+					<div className="flex flex-col justify-between gap-2 text-xs text-slate-500 sm:flex-row sm:items-center">
 						<button
 							type="button"
 							onClick={addRepo}
@@ -496,8 +496,8 @@ export default function SetupPage() {
 					</div>
 
 					{showRequirements && (
-						<div className="mt-4 space-y-3 border-slate-800 border-t pt-4 font-mono text-slate-300 text-xs">
-							<div className="font-bold font-sans text-sky-400 text-sm">
+						<div className="mt-4 space-y-3 border-t border-slate-800 pt-4 font-mono text-xs text-slate-300">
+							<div className="font-sans text-sm font-bold text-sky-400">
 								Competitor Repository Specification
 							</div>
 							<ul className="list-disc space-y-1.5 pl-5 text-slate-400">
@@ -549,7 +549,7 @@ export default function SetupPage() {
 				{/* Test Types Selection */}
 				<div className="space-y-4 rounded-xl border border-slate-800 bg-slate-900 p-6">
 					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-2 font-semibold text-slate-200 text-sm">
+						<div className="flex items-center gap-2 text-sm font-semibold text-slate-200">
 							<Layers className="h-4 w-4 text-sky-400" />
 							<span>Benchmark Test Types ({selectedTypes.length} selected)</span>
 						</div>
@@ -557,14 +557,14 @@ export default function SetupPage() {
 							<button
 								type="button"
 								onClick={selectAll}
-								className="rounded bg-slate-800 px-2.5 py-1 text-slate-300 text-xs hover:bg-slate-700"
+								className="rounded bg-slate-800 px-2.5 py-1 text-xs text-slate-300 hover:bg-slate-700"
 							>
 								Select All
 							</button>
 							<button
 								type="button"
 								onClick={clearAll}
-								className="rounded bg-slate-800 px-2.5 py-1 text-slate-300 text-xs hover:bg-slate-700"
+								className="rounded bg-slate-800 px-2.5 py-1 text-xs text-slate-300 hover:bg-slate-700"
 							>
 								Clear
 							</button>
@@ -611,8 +611,8 @@ export default function SetupPage() {
 				<div className="space-y-6 rounded-xl border border-slate-800 bg-slate-900 p-6">
 					<div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
 						<div>
-							<h3 className="font-semibold text-slate-200 text-sm">Workload Configuration</h3>
-							<p className="mt-0.5 text-slate-500 text-xs">
+							<h3 className="text-sm font-semibold text-slate-200">Workload Configuration</h3>
+							<p className="mt-0.5 text-xs text-slate-500">
 								Global defaults applied to all tests unless overridden per type.
 							</p>
 						</div>
@@ -620,7 +620,7 @@ export default function SetupPage() {
 							<button
 								type="button"
 								onClick={() => setShowTypeOverrides(!showTypeOverrides)}
-								className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 font-semibold text-sky-400 text-xs transition-colors hover:bg-slate-700"
+								className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-sky-400 transition-colors hover:bg-slate-700"
 							>
 								{showTypeOverrides ? "Hide Per-Type Settings" : "Configure Per-Type Workload"}
 							</button>
@@ -629,7 +629,7 @@ export default function SetupPage() {
 
 					<div className="grid grid-cols-1 gap-6 md:grid-cols-3">
 						<div>
-							<label htmlFor="cfg-vus" className="mb-2 block font-medium text-slate-300 text-xs">
+							<label htmlFor="cfg-vus" className="mb-2 block text-xs font-medium text-slate-300">
 								Default Virtual Users (VUs)
 							</label>
 							<input
@@ -639,15 +639,15 @@ export default function SetupPage() {
 								max="1000"
 								value={vus}
 								onChange={(e) => setVus(Number(e.target.value))}
-								className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-slate-100 text-sm focus:border-sky-500 focus:outline-none"
+								className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-sm text-slate-100 focus:border-sky-500 focus:outline-none"
 							/>
-							<p className="mt-1 text-slate-500 text-xs">Default concurrency for all test types</p>
+							<p className="mt-1 text-xs text-slate-500">Default concurrency for all test types</p>
 						</div>
 
 						<div>
 							<label
 								htmlFor="cfg-total-records"
-								className="mb-2 block font-medium text-slate-300 text-xs"
+								className="mb-2 block text-xs font-medium text-slate-300"
 							>
 								Default Total Records / Requests
 							</label>
@@ -658,15 +658,15 @@ export default function SetupPage() {
 								step="1000"
 								value={totalRecords}
 								onChange={(e) => setTotalRecords(Number(e.target.value))}
-								className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-slate-100 text-sm focus:border-sky-500 focus:outline-none"
+								className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-sm text-slate-100 focus:border-sky-500 focus:outline-none"
 							/>
-							<p className="mt-1 text-slate-500 text-xs">Default 100,000</p>
+							<p className="mt-1 text-xs text-slate-500">Default 100,000</p>
 						</div>
 
 						<div>
 							<label
 								htmlFor="cfg-max-pool"
-								className="mb-2 block font-medium text-slate-300 text-xs"
+								className="mb-2 block text-xs font-medium text-slate-300"
 							>
 								App DB Max Pool Size
 							</label>
@@ -676,15 +676,15 @@ export default function SetupPage() {
 								min="1"
 								value={maxPoolSize}
 								onChange={(e) => setMaxPoolSize(Number(e.target.value))}
-								className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-slate-100 text-sm focus:border-sky-500 focus:outline-none"
+								className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-sm text-slate-100 focus:border-sky-500 focus:outline-none"
 							/>
-							<p className="mt-1 text-slate-500 text-xs">Connection % denominator</p>
+							<p className="mt-1 text-xs text-slate-500">Connection % denominator</p>
 						</div>
 
 						<div>
 							<label
 								htmlFor="cfg-run-count"
-								className="mb-2 block font-medium text-slate-300 text-xs"
+								className="mb-2 block text-xs font-medium text-slate-300"
 							>
 								Runs per Repo
 							</label>
@@ -695,15 +695,15 @@ export default function SetupPage() {
 								max="50"
 								value={runCount}
 								onChange={(e) => setRunCount(Math.max(1, Math.floor(Number(e.target.value) || 1)))}
-								className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-slate-100 text-sm focus:border-sky-500 focus:outline-none"
+								className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-sm text-slate-100 focus:border-sky-500 focus:outline-none"
 							/>
-							<p className="mt-1 text-slate-500 text-xs">
+							<p className="mt-1 text-xs text-slate-500">
 								{activeRepos.length * runCount} queued sequentially
 							</p>
 						</div>
 
 						<div>
-							<label htmlFor="cfg-warmup" className="mb-2 block font-medium text-slate-300 text-xs">
+							<label htmlFor="cfg-warmup" className="mb-2 block text-xs font-medium text-slate-300">
 								Warmup Duration (seconds)
 							</label>
 							<input
@@ -713,15 +713,15 @@ export default function SetupPage() {
 								max="3600"
 								value={warmupSeconds}
 								onChange={(e) => setWarmupSeconds(Number(e.target.value))}
-								className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-slate-100 text-sm focus:border-sky-500 focus:outline-none"
+								className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-sm text-slate-100 focus:border-sky-500 focus:outline-none"
 							/>
-							<p className="mt-1 text-slate-500 text-xs">Unmeasured k6 run per test, 0 = off</p>
+							<p className="mt-1 text-xs text-slate-500">Unmeasured k6 run per test, 0 = off</p>
 						</div>
 
 						<div>
 							<label
 								htmlFor="cfg-cooldown"
-								className="mb-2 block font-medium text-slate-300 text-xs"
+								className="mb-2 block text-xs font-medium text-slate-300"
 							>
 								Cooldown Duration (seconds)
 							</label>
@@ -732,24 +732,24 @@ export default function SetupPage() {
 								max="3600"
 								value={cooldownSeconds}
 								onChange={(e) => setCooldownSeconds(Number(e.target.value))}
-								className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-slate-100 text-sm focus:border-sky-500 focus:outline-none"
+								className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-sm text-slate-100 focus:border-sky-500 focus:outline-none"
 							/>
-							<p className="mt-1 text-slate-500 text-xs">Settle before idle baseline, 0 = off</p>
+							<p className="mt-1 text-xs text-slate-500">Settle before idle baseline, 0 = off</p>
 						</div>
 					</div>
 
 					{/* Per-Type Workload Table */}
 					{showTypeOverrides && (
-						<div className="space-y-3 border-slate-800 border-t pt-4">
+						<div className="space-y-3 border-t border-slate-800 pt-4">
 							<div className="flex items-center justify-between">
-								<span className="font-bold text-slate-300 text-xs uppercase tracking-wider">
+								<span className="text-xs font-bold tracking-wider text-slate-300 uppercase">
 									Per-Type Workload Overrides ({selectedTypes.length} selected types)
 								</span>
 								{Object.keys(typeWorkloads).length > 0 && (
 									<button
 										type="button"
 										onClick={applyDefaultsToAllTypes}
-										className="font-medium text-slate-400 text-xs hover:text-white"
+										className="text-xs font-medium text-slate-400 hover:text-white"
 									>
 										Reset all to global defaults
 									</button>
@@ -758,7 +758,7 @@ export default function SetupPage() {
 
 							<div className="overflow-x-auto rounded-lg border border-slate-800">
 								<table className="w-full text-left font-mono text-xs">
-									<thead className="border-slate-800 border-b bg-slate-950 text-slate-400">
+									<thead className="border-b border-slate-800 bg-slate-950 text-slate-400">
 										<tr>
 											<th className="px-3 py-2.5">Test Type</th>
 											<th className="px-3 py-2.5">VUs</th>
@@ -807,7 +807,7 @@ export default function SetupPage() {
 															onChange={(e) =>
 																updateTypeWorkload(type, "vus", Number(e.target.value))
 															}
-															className="w-20 rounded border border-slate-700 bg-slate-950 px-2 py-1 font-mono text-slate-100 text-xs focus:border-sky-500"
+															className="w-20 rounded border border-slate-700 bg-slate-950 px-2 py-1 font-mono text-xs text-slate-100 focus:border-sky-500"
 														/>
 													</td>
 													<td className="px-3 py-2">
@@ -819,7 +819,7 @@ export default function SetupPage() {
 															onChange={(e) =>
 																updateTypeWorkload(type, "totalRecords", Number(e.target.value))
 															}
-															className="w-28 rounded border border-slate-700 bg-slate-950 px-2 py-1 font-mono text-slate-100 text-xs focus:border-sky-500"
+															className="w-28 rounded border border-slate-700 bg-slate-950 px-2 py-1 font-mono text-xs text-slate-100 focus:border-sky-500"
 														/>
 													</td>
 													<td className="px-3 py-2 text-slate-400">
@@ -830,13 +830,13 @@ export default function SetupPage() {
 															<button
 																type="button"
 																onClick={() => clearTypeWorkload(type)}
-																className="text-slate-500 text-xs hover:text-white"
+																className="text-xs text-slate-500 hover:text-white"
 																title="Reset to global default"
 															>
 																Reset
 															</button>
 														) : (
-															<span className="text-slate-600 text-xs">default</span>
+															<span className="text-xs text-slate-600">default</span>
 														)}
 													</td>
 												</tr>
@@ -854,19 +854,19 @@ export default function SetupPage() {
 					<button
 						type="button"
 						onClick={() => setShowAdvanced(!showAdvanced)}
-						className="flex items-center gap-2 font-semibold text-slate-300 text-sm hover:text-white"
+						className="flex items-center gap-2 text-sm font-semibold text-slate-300 hover:text-white"
 					>
 						<Settings className="h-4 w-4 text-slate-400" />
 						<span>Kubernetes Pod Resource Limits</span>
-						<span className="ml-2 font-normal text-slate-500 text-xs">
+						<span className="ml-2 text-xs font-normal text-slate-500">
 							{showAdvanced ? "(Hide)" : "(Show)"}
 						</span>
 					</button>
 
 					{showAdvanced && (
-						<div className="mt-4 space-y-4 border-slate-800 border-t pt-4">
+						<div className="mt-4 space-y-4 border-t border-slate-800 pt-4">
 							<div>
-								<label htmlFor="cfg-namespace" className="mb-1 block text-slate-400 text-xs">
+								<label htmlFor="cfg-namespace" className="mb-1 block text-xs text-slate-400">
 									Kubernetes Namespace
 								</label>
 								<input
@@ -875,12 +875,12 @@ export default function SetupPage() {
 									value={namespace}
 									onChange={(e) => setNamespace(e.target.value)}
 									placeholder="benchmark"
-									className="w-full max-w-xs rounded border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-slate-100 text-xs"
+									className="w-full max-w-xs rounded border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-xs text-slate-100"
 								/>
 							</div>
 							<div className="grid grid-cols-2 gap-4 md:grid-cols-4">
 								<div>
-									<label htmlFor="cfg-app-cpu" className="mb-1 block text-slate-400 text-xs">
+									<label htmlFor="cfg-app-cpu" className="mb-1 block text-xs text-slate-400">
 										App CPU Limit
 									</label>
 									<input
@@ -888,11 +888,11 @@ export default function SetupPage() {
 										type="text"
 										value={appCpuLimit}
 										onChange={(e) => setAppCpuLimit(e.target.value)}
-										className="w-full rounded border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-slate-100 text-xs"
+										className="w-full rounded border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-xs text-slate-100"
 									/>
 								</div>
 								<div>
-									<label htmlFor="cfg-app-mem" className="mb-1 block text-slate-400 text-xs">
+									<label htmlFor="cfg-app-mem" className="mb-1 block text-xs text-slate-400">
 										App Mem Limit
 									</label>
 									<input
@@ -900,11 +900,11 @@ export default function SetupPage() {
 										type="text"
 										value={appMemLimit}
 										onChange={(e) => setAppMemLimit(e.target.value)}
-										className="w-full rounded border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-slate-100 text-xs"
+										className="w-full rounded border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-xs text-slate-100"
 									/>
 								</div>
 								<div>
-									<label htmlFor="cfg-db-cpu" className="mb-1 block text-slate-400 text-xs">
+									<label htmlFor="cfg-db-cpu" className="mb-1 block text-xs text-slate-400">
 										DB CPU Limit
 									</label>
 									<input
@@ -912,11 +912,11 @@ export default function SetupPage() {
 										type="text"
 										value={dbCpuLimit}
 										onChange={(e) => setDbCpuLimit(e.target.value)}
-										className="w-full rounded border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-slate-100 text-xs"
+										className="w-full rounded border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-xs text-slate-100"
 									/>
 								</div>
 								<div>
-									<label htmlFor="cfg-db-mem" className="mb-1 block text-slate-400 text-xs">
+									<label htmlFor="cfg-db-mem" className="mb-1 block text-xs text-slate-400">
 										DB Mem Limit
 									</label>
 									<input
@@ -924,7 +924,7 @@ export default function SetupPage() {
 										type="text"
 										value={dbMemLimit}
 										onChange={(e) => setDbMemLimit(e.target.value)}
-										className="w-full rounded border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-slate-100 text-xs"
+										className="w-full rounded border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-xs text-slate-100"
 									/>
 								</div>
 							</div>
@@ -932,11 +932,11 @@ export default function SetupPage() {
 					)}
 				</div>
 
-				<div className="sticky bottom-0 z-20 -mx-4 flex flex-col gap-3 border-slate-800 border-t bg-slate-950 px-4 pt-4 pb-5 sm:-mx-6 sm:flex-row sm:px-6 lg:-mx-8 lg:px-8">
+				<div className="sticky bottom-0 z-20 -mx-4 flex flex-col gap-3 border-t border-slate-800 bg-slate-950 px-4 pt-4 pb-5 sm:-mx-6 sm:flex-row sm:px-6 lg:-mx-8 lg:px-8">
 					<button
 						type="button"
 						onClick={resetDefaults}
-						className="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-5 py-4 font-semibold text-slate-300 text-sm transition-colors hover:bg-slate-700"
+						className="flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-5 py-4 text-sm font-semibold text-slate-300 transition-colors hover:bg-slate-700"
 						title="Reset configuration to default settings"
 					>
 						<RotateCcw className="h-4 w-4 text-slate-400" />
@@ -945,7 +945,7 @@ export default function SetupPage() {
 					<button
 						type="submit"
 						disabled={loading}
-						className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-sky-500 py-4 font-bold text-base text-slate-950 shadow-lg shadow-sky-500/20 transition-colors hover:bg-sky-400 disabled:opacity-50"
+						className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-sky-500 py-4 text-base font-bold text-slate-950 shadow-lg shadow-sky-500/20 transition-colors hover:bg-sky-400 disabled:opacity-50"
 					>
 						<Play className="h-5 w-5 fill-current" />
 						<span>

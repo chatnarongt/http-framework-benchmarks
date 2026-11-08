@@ -29,7 +29,7 @@ export default function ReportDetailPage() {
 	if (!run || run.error === "Report not found") {
 		return (
 			<div className="space-y-4 py-20 text-center">
-				<div className="font-bold text-white text-xl">Report not found</div>
+				<div className="text-xl font-bold text-white">Report not found</div>
 				<Link href="/reports" className="text-sky-400 underline">
 					Back to Reports
 				</Link>
@@ -65,18 +65,18 @@ export default function ReportDetailPage() {
 				<div>
 					<Link
 						href="/reports"
-						className="mb-2 inline-flex items-center gap-1.5 text-slate-400 text-xs transition-colors hover:text-sky-400"
+						className="mb-2 inline-flex items-center gap-1.5 text-xs text-slate-400 transition-colors hover:text-sky-400"
 					>
 						<ArrowLeft className="h-3.5 w-3.5" />
 						<span>All Reports</span>
 					</Link>
-					<h1 className="flex items-center gap-3 font-black text-2xl text-white tracking-tight">
+					<h1 className="flex items-center gap-3 text-2xl font-black tracking-tight text-white">
 						<span>{run.repoName || "Benchmark Report"}</span>
-						<span className="rounded-md bg-slate-800 px-2.5 py-1 font-mono font-normal text-slate-300 text-xs">
+						<span className="rounded-md bg-slate-800 px-2.5 py-1 font-mono text-xs font-normal text-slate-300">
 							{id}
 						</span>
 					</h1>
-					<p className="mt-1 text-slate-400 text-xs">
+					<p className="mt-1 text-xs text-slate-400">
 						Repo: <span className="font-mono text-slate-200">{run.repoUrl}</span> | Ran at{" "}
 						{new Date(run.createdAt).toLocaleString()} | Target Database:{" "}
 						<span className="font-semibold text-sky-400 uppercase">{run.database}</span> | Virtual
@@ -90,7 +90,7 @@ export default function ReportDetailPage() {
 				<button
 					type="button"
 					onClick={exportJson}
-					className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 font-semibold text-slate-200 text-xs transition-colors hover:border-slate-500"
+					className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-xs font-semibold text-slate-200 transition-colors hover:border-slate-500"
 				>
 					<Download className="h-4 w-4" />
 					<span>Export JSON</span>
@@ -100,31 +100,31 @@ export default function ReportDetailPage() {
 			{/* KPI Visual Cards */}
 			<div className="grid grid-cols-2 gap-4 md:grid-cols-4">
 				<div className="rounded-xl border border-slate-800 bg-slate-900 p-5">
-					<div className="font-medium text-slate-400 text-xs">Max Throughput</div>
-					<div className="mt-1 font-black text-2xl text-sky-400">
+					<div className="text-xs font-medium text-slate-400">Max Throughput</div>
+					<div className="mt-1 text-2xl font-black text-sky-400">
 						{maxRps.toLocaleString()}{" "}
-						<span className="font-normal text-slate-500 text-xs">req/s</span>
+						<span className="text-xs font-normal text-slate-500">req/s</span>
 					</div>
 				</div>
 				<div className="rounded-xl border border-slate-800 bg-slate-900 p-5">
-					<div className="font-medium text-slate-400 text-xs">Tests Executed</div>
-					<div className="mt-1 font-black text-2xl text-slate-100">{results.length} types</div>
+					<div className="text-xs font-medium text-slate-400">Tests Executed</div>
+					<div className="mt-1 text-2xl font-black text-slate-100">{results.length} types</div>
 				</div>
 				<div className="rounded-xl border border-slate-800 bg-slate-900 p-5">
-					<div className="font-medium text-slate-400 text-xs">App CPU Limit</div>
-					<div className="mt-1 font-black font-mono text-2xl text-slate-100">
-						{run.appCpuLimit} <span className="font-normal text-slate-500 text-xs">core</span>
+					<div className="text-xs font-medium text-slate-400">App CPU Limit</div>
+					<div className="mt-1 font-mono text-2xl font-black text-slate-100">
+						{run.appCpuLimit} <span className="text-xs font-normal text-slate-500">core</span>
 					</div>
 				</div>
 				<div className="rounded-xl border border-slate-800 bg-slate-900 p-5">
-					<div className="font-medium text-slate-400 text-xs">App Memory Limit</div>
-					<div className="mt-1 font-black font-mono text-2xl text-slate-100">{run.appMemLimit}</div>
+					<div className="text-xs font-medium text-slate-400">App Memory Limit</div>
+					<div className="mt-1 font-mono text-2xl font-black text-slate-100">{run.appMemLimit}</div>
 				</div>
 			</div>
 
 			{/* Visual Bar Comparison */}
 			<div className="space-y-4 rounded-xl border border-slate-800 bg-slate-900 p-6">
-				<h2 className="flex items-center gap-2 font-bold text-slate-200 text-sm">
+				<h2 className="flex items-center gap-2 text-sm font-bold text-slate-200">
 					<Zap className="h-4 w-4 text-sky-400" />
 					<span>Throughput Comparison (Requests per Second)</span>
 				</h2>
@@ -153,16 +153,16 @@ export default function ReportDetailPage() {
 
 			{/* Comprehensive 25-Metric Table */}
 			<div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900">
-				<div className="flex items-center justify-between border-slate-800 border-b px-6 py-4">
-					<h2 className="flex items-center gap-2 font-bold text-slate-200 text-sm">
+				<div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+					<h2 className="flex items-center gap-2 text-sm font-bold text-slate-200">
 						<Layers className="h-4 w-4 text-sky-400" />
 						<span>Complete Metrics (All 25 Collected Dimensions)</span>
 					</h2>
 				</div>
 
 				<div className="overflow-x-auto">
-					<table className="w-full whitespace-nowrap text-left font-mono text-xs">
-						<thead className="border-slate-800 border-b bg-slate-950/80 text-slate-400">
+					<table className="w-full text-left font-mono text-xs whitespace-nowrap">
+						<thead className="border-b border-slate-800 bg-slate-950/80 text-slate-400">
 							<tr>
 								<th className="px-4 py-3 font-bold">Test Type</th>
 								<th className="px-4 py-3">Total Reqs</th>
@@ -194,7 +194,7 @@ export default function ReportDetailPage() {
 										<td className="px-4 py-3 font-bold text-sky-400">
 											<div>{r.testType}</div>
 											{tw && (
-												<div className="font-normal text-[10px] text-slate-500">
+												<div className="text-[10px] font-normal text-slate-500">
 													{tw.vus ?? run.vus} VUs •{" "}
 													{(tw.totalRecords ?? run.totalRecords).toLocaleString()} recs
 												</div>

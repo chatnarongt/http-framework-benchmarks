@@ -92,11 +92,11 @@ export default function BenchmarkView({ id }: { id: string }) {
 			<div className="flex flex-col justify-between gap-4 rounded-xl border border-slate-800 bg-slate-900 p-6 md:flex-row md:items-center">
 				<div>
 					<div className="flex items-center gap-3">
-						<h1 className="font-bold font-mono text-white text-xl">{run?.repoName || id}</h1>
-						{run?.repoName && <span className="font-mono text-slate-500 text-xs">({id})</span>}
+						<h1 className="font-mono text-xl font-bold text-white">{run?.repoName || id}</h1>
+						{run?.repoName && <span className="font-mono text-xs text-slate-500">({id})</span>}
 						<span
 							className={cn(
-								"rounded-full border px-2.5 py-0.5 font-semibold text-xs uppercase tracking-wider",
+								"rounded-full border px-2.5 py-0.5 text-xs font-semibold tracking-wider uppercase",
 								statusTone(status),
 							)}
 						>
@@ -104,7 +104,7 @@ export default function BenchmarkView({ id }: { id: string }) {
 						</span>
 					</div>
 					{run && (
-						<p className="mt-2 text-slate-400 text-xs">
+						<p className="mt-2 text-xs text-slate-400">
 							Database: <span className="font-mono text-slate-200">{run.database}</span> | VUs:{" "}
 							<span className="font-mono text-slate-200">{run.vus}</span> | Records:{" "}
 							<span className="font-mono text-slate-200">{run.totalRecords.toLocaleString()}</span>
@@ -118,7 +118,7 @@ export default function BenchmarkView({ id }: { id: string }) {
 							type="button"
 							onClick={handleStop}
 							disabled={stopping}
-							className="inline-flex items-center gap-2 rounded-lg border border-slate-600 border-dashed bg-transparent px-4 py-2.5 font-bold text-slate-300 text-sm transition-colors hover:border-slate-400 hover:bg-slate-800 hover:text-white disabled:opacity-50"
+							className="inline-flex items-center gap-2 rounded-lg border border-dashed border-slate-600 bg-transparent px-4 py-2.5 text-sm font-bold text-slate-300 transition-colors hover:border-slate-400 hover:bg-slate-800 hover:text-white disabled:opacity-50"
 						>
 							<StopCircle className="h-4 w-4 text-slate-400" />
 							<span>{stopping ? "Stopping..." : "Stop Benchmark"}</span>
@@ -127,7 +127,7 @@ export default function BenchmarkView({ id }: { id: string }) {
 					{status === "COMPLETED" && (
 						<Link
 							href={`/reports/${id}`}
-							className="inline-flex items-center gap-2 rounded-lg bg-sky-500 px-5 py-2.5 font-bold text-slate-950 text-sm transition-colors hover:bg-sky-400"
+							className="inline-flex items-center gap-2 rounded-lg bg-sky-500 px-5 py-2.5 text-sm font-bold text-slate-950 transition-colors hover:bg-sky-400"
 						>
 							<span>View Full Report</span>
 							<ArrowRight className="h-4 w-4" />
@@ -138,8 +138,8 @@ export default function BenchmarkView({ id }: { id: string }) {
 
 			{/* Terminal logs */}
 			<div className="flex flex-col overflow-hidden rounded-xl border border-slate-800 bg-slate-900">
-				<div className="flex items-center justify-between border-slate-800 border-b bg-slate-950 px-4 py-3">
-					<div className="flex items-center gap-2 text-slate-400 text-xs">
+				<div className="flex items-center justify-between border-b border-slate-800 bg-slate-950 px-4 py-3">
+					<div className="flex items-center gap-2 text-xs text-slate-400">
 						<Terminal className="h-4 w-4 text-slate-400" />
 						<span>Orchestrator Logs</span>
 					</div>
@@ -158,7 +158,7 @@ export default function BenchmarkView({ id }: { id: string }) {
 				</div>
 				<div
 					ref={terminalRef}
-					className="h-112.5 select-text overflow-y-auto whitespace-pre-wrap bg-black p-4 font-mono text-slate-300 text-xs leading-relaxed"
+					className="h-112.5 overflow-y-auto bg-black p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap text-slate-300 select-text"
 				>
 					{logs || "Waiting for execution logs...\n"}
 				</div>
@@ -167,13 +167,13 @@ export default function BenchmarkView({ id }: { id: string }) {
 			{/* Real-time Results Preview */}
 			{run?.results && run.results.length > 0 && (
 				<div className="space-y-4 rounded-xl border border-slate-800 bg-slate-900 p-6">
-					<h2 className="flex items-center gap-2 font-semibold text-slate-200 text-sm">
+					<h2 className="flex items-center gap-2 text-sm font-semibold text-slate-200">
 						<Activity className="h-4 w-4 text-sky-400" />
 						<span>Completed Tests ({run.results.length})</span>
 					</h2>
 					<div className="overflow-x-auto">
 						<table className="w-full text-left font-mono text-xs">
-							<thead className="border-slate-800 border-b text-slate-400">
+							<thead className="border-b border-slate-800 text-slate-400">
 								<tr>
 									<th className="px-3 py-2">Type</th>
 									<th className="px-3 py-2">Requests</th>

@@ -103,7 +103,7 @@ export function RepoCombobox({
 						pick(filtered[Math.min(highlight, filtered.length - 1)]);
 					}
 				}}
-				className="h-9 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 font-mono text-slate-100 text-sm focus:border-sky-500 focus:outline-none"
+				className="h-9 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 font-mono text-sm text-slate-100 focus:border-sky-500 focus:outline-none"
 				placeholder="https://github.com/..."
 				role="combobox"
 				aria-expanded={open}
@@ -134,10 +134,10 @@ export function RepoCombobox({
 							)}
 						>
 							<div className="min-w-0 flex-1">
-								<div className="truncate font-semibold text-slate-200 text-xs">
+								<div className="truncate text-xs font-semibold text-slate-200">
 									{extractRepoName(s.repoUrl)}
 								</div>
-								<div className="truncate font-mono text-slate-500 text-xs">{s.repoUrl}</div>
+								<div className="truncate font-mono text-xs text-slate-500">{s.repoUrl}</div>
 							</div>
 							<button
 								type="button"
