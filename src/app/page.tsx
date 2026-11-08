@@ -35,10 +35,12 @@ interface RepoEntry {
 	url: string;
 	database: DatabaseType;
 	enabled: boolean;
+	name: string;
 }
 
 const defaultRepo = (): RepoEntry => ({
 	id: crypto.randomUUID(),
+	name: "",
 	url: DEFAULT_BENCHMARK_CONFIG.repoUrl,
 	database: DEFAULT_BENCHMARK_CONFIG.database,
 	enabled: true,
@@ -97,6 +99,7 @@ export default function SetupPage() {
 							const e = (r && typeof r === "object" ? r : {}) as Record<string, unknown>;
 							return {
 								id: typeof e.id === "string" ? e.id : crypto.randomUUID(),
+								name: typeof e.name === "string" ? e.name : "",
 								url: String(e.url ?? ""),
 								database: validDatabase(e.database),
 								enabled: e.enabled !== false,
@@ -107,6 +110,7 @@ export default function SetupPage() {
 					setRepos(
 						parsed.repoUrls.map((u: unknown) => ({
 							id: crypto.randomUUID(),
+							name: "",
 							url: String(u),
 							database: validDatabase(parsed.database),
 							enabled: true,
@@ -229,6 +233,7 @@ export default function SetupPage() {
 			...prev,
 			{
 				id: crypto.randomUUID(),
+				name: "",
 				url: "",
 				database: DEFAULT_BENCHMARK_CONFIG.database,
 				enabled: true,
@@ -316,7 +321,11 @@ export default function SetupPage() {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					repos: activeRepos.map((r) => ({ repoUrl: r.url.trim(), database: r.database })),
+					repos: activeRepos.map((r) => ({
+						repoUrl: r.url.trim(),
+						database: r.database,
+						name: r.name,
+					})),
 					types: selectedTypes,
 					vus,
 					totalRecords,
@@ -394,11 +403,16 @@ export default function SetupPage() {
 								)}
 							>
 								<div className="flex-1 space-y-1">
-									<div className="truncate text-slate-500 text-xs">
-										Name:{" "}
-										<span className="font-mono font-semibold text-sky-400">
-											{repo.url.trim() ? extractRepoName(repo.url) : "—"}
-										</span>
+									<div className="flex items-center gap-2 text-slate-500 text-xs">
+										<span>Name:</span>
+										<input
+											type="text"
+											value={repo.name}
+											maxLength={100}
+											onChange={(e) => updateRepo(index, { name: e.target.value })}
+											placeholder={repo.url.trim() ? extractRepoName(repo.url) : "—"}
+											className="h-6 min-w-0 flex-1 rounded border border-slate-800 bg-transparent px-2 font-mono font-semibold text-sky-400 placeholder:text-sky-400/50 focus:border-sky-500 focus:outline-none"
+										/>
 									</div>
 									<div className="flex items-center gap-2">
 										<button

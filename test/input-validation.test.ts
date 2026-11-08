@@ -102,6 +102,20 @@ assert.deepStrictEqual(
 	],
 );
 
+// repos: custom name trimmed, control chars stripped, capped at 100; blank omitted
+assert.deepStrictEqual(
+	validRepos([
+		{ repoUrl: "https://github.com/x/a.git", name: "  my\nrun\u0000 " },
+		{ repoUrl: "https://github.com/x/b.git", name: "   " },
+		{ repoUrl: "https://github.com/x/c.git", name: "n".repeat(150) },
+	]),
+	[
+		{ repoUrl: "https://github.com/x/a.git", database: "postgres", name: "myrun" },
+		{ repoUrl: "https://github.com/x/b.git", database: "postgres" },
+		{ repoUrl: "https://github.com/x/c.git", database: "postgres", name: "n".repeat(100) },
+	],
+);
+
 // repos: one poisoned URL rejects the whole batch
 assert.strictEqual(
 	validRepos([

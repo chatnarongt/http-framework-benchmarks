@@ -65,6 +65,17 @@ export function validDatabase(raw: unknown): DatabaseType {
 export interface RepoEntry {
 	repoUrl: string;
 	database: DatabaseType;
+	/** Optional display name; defaults to the repo name at the call site. */
+	name?: string;
+}
+
+/** Display-only label: control chars stripped, trimmed, capped at 100. Blank → "". */
+export function validRunName(raw: unknown): string {
+	return [...String(raw ?? "")]
+		.filter((c) => c.charCodeAt(0) > 31 && c.charCodeAt(0) !== 127)
+		.join("")
+		.trim()
+		.slice(0, 100);
 }
 
 /**
@@ -84,6 +95,8 @@ export function validRepos(raw: unknown): RepoEntry[] | null {
 		const repoUrl = validRepoUrl(s);
 		if (!repoUrl) return null;
 		const repo: RepoEntry = { repoUrl, database: validDatabase(entry.database) };
+		const name = validRunName(entry.name);
+		if (name) repo.name = name;
 		const key = `${repoUrl}\n${repo.database}`;
 		if (seen.has(key)) continue;
 		seen.add(key);

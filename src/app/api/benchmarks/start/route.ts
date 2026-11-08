@@ -98,10 +98,10 @@ export async function POST(req: Request) {
 		// of running each repo back-to-back.
 		const runs = await prisma.$transaction(
 			Array.from({ length: runCount }, () =>
-				repos.map(({ repoUrl, database }) =>
+				repos.map(({ repoUrl, database, name }) =>
 					prisma.benchmarkRun.create({
 						data: {
-							repoName: extractRepoName(repoUrl),
+							repoName: name || extractRepoName(repoUrl),
 							repoUrl,
 							database,
 							namespace,
